@@ -8,10 +8,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
+privileged="false"
+stateless="false"
+
 while getopts ":hc:n:psv" o; do
     case "${o}" in
-        c) # container
-            container=${OPTARG}
+        i) # image repository, name, and tag
+            image=${OPTARG}
             ;;
         n) # name
             name=${OPTARG}
@@ -32,19 +35,23 @@ while getopts ":hc:n:psv" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "$container" ]; then
+if [ -z "$image" ]; then
     if [ "x$1" == "x" ]; then
-        echo "Please specify container"
+        echo "Please specify a Docker image to use for the actor"
         usage
     else
-        container=$1
+        image=$1
     fi
 fi
 
-curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"image=${container}&name=${name}&privileged=${privileged}&stateless=${stateless}\" $BASE_URL/actors/v2"
+if [ -z "$name" ]; then
+    echo "Please specify a name to give your actor"
+    usage
+fi
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" --data 'image=${image}&name=${name}&privileged=${privileged}&stateless=${stateless}' '$BASE_URL/actors/v2'"
 
 function filter() {
-    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result' # | [.name, .id] | @tsv' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then
@@ -52,3 +59,4 @@ if [[ "$verbose" == "true" ]]; then
 else
     filter $curlCommand
 fi
+

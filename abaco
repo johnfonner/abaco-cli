@@ -3,19 +3,19 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 case "$1" in
-  list|ls)    	 shift;
-	$DIR/abaco-list.sh "$@";;
+  list|ls|actors|images)      shift;
+    $DIR/abaco-list.sh "$@";;
 
-  logs)		shift;
-	$DIR/abaco-logs.sh "$@";;
+  logs)         shift;
+    $DIR/abaco-logs.sh "$@";;
 
-  executions)    shift;
-	$DIR/abaco-executions.sh "$@";;
+  executions)   shift;
+    $DIR/abaco-executions.sh "$@";;
 
-  create)	shift;
-	$DIR/abaco-create.sh "$@";;
+  create)       shift;
+    $DIR/abaco-create.sh "$@";;
 
-  delete)	shift;
+  delete)	    shift;
 	$DIR/abaco-delete.sh "$@";;		
 
   foo)
