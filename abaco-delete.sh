@@ -8,11 +8,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
-while getopts ":ha:v" o; do
+while getopts ":hv" o; do
     case "${o}" in
-        a) # actor ID
-            actor=${OPTARG}
-            ;;
         v) # verbose
             verbose="true"
             ;;
@@ -23,13 +20,10 @@ while getopts ":ha:v" o; do
 done
 shift $((OPTIND-1))
 
+actor="$1"
 if [ -z "$actor" ]; then
-    if [ "x$1" == "x" ]; then
-        echo "Please specify actor ID"
-        usage
-    else
-        actor=$1
-    fi
+    echo "Please specify actor ID at end of command"
+    usage
 fi
 
 curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X DELETE $BASE_URL/actors/v2/${actor}"
