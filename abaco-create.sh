@@ -55,7 +55,7 @@ fi
 curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" --data 'image=${image}&name=${name}&privileged=${privileged}&stateless=${stateless}&force=${force}' '$BASE_URL/actors/v2'"
 
 function filter() {
-    eval $@ | jq -r '.result' # | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then
@@ -63,4 +63,3 @@ if [[ "$verbose" == "true" ]]; then
 else
     filter $curlCommand
 fi
-
