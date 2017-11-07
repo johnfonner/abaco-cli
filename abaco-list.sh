@@ -28,7 +28,7 @@ else
 fi
 
 function filter() {
-    eval $@ | jq -r '.result | .[] | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result | .[] | [.name, .id, .status] | @tsv' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then

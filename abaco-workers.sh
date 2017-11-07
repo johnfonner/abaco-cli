@@ -40,13 +40,14 @@ if [ -z "$worker" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/workers"
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/workers/$worker"
+    verbose="true"
 fi
 
 function filter() {
     eval $@ | jq -r '.result | .[] | [.id, .status] | @tsv' | column -t
 }
 
-if [[ "$verbose" == "true" ]] || ! [[ -z "$worker" ]]; then
+if [[ "$verbose" == "true" ]]; then
     eval $curlCommand
 else
     filter $curlCommand

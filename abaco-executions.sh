@@ -39,10 +39,11 @@ if [ -z "$execution" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/executions"
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/executions/$execution"
+    verbose="true"
 fi
 
 function filter() {
-    eval $@ | jq -r '.result' # | .[] | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result | .ids | .[]' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then
