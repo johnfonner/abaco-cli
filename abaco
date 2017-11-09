@@ -148,7 +148,7 @@ case "$1" in
             *)              systems-list.py "$@";;
         esac;;
 
-  -h|--help|-help)      break ;;
-  --) break;;
-  *) break;;
+  -h|--help|-help)      ;;
+  --) ;;
+  *) ;;
 esac
