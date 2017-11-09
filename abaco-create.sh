@@ -12,13 +12,16 @@ privileged="false"
 stateless="false"
 force="false"
 
-while getopts ":hi:n:psfv" o; do
+while getopts ":hi:n:e:psfv" o; do
     case "${o}" in
         i) # image repository, name, and tag
             image=${OPTARG}
             ;;
         n) # name
             name=${OPTARG}
+            ;;
+        e) # default environment (JSON)
+            default_env=${OPTARG}
             ;;
         p) # privileged
             privileged="true"
@@ -52,7 +55,8 @@ if [ -z "$name" ]; then
     echo "Please specify a name to give your actor"
     usage
 fi
-curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" --data 'image=${image}&name=${name}&privileged=${privileged}&stateless=${stateless}&force=${force}' '$BASE_URL/actors/v2'"
+
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" --data 'image=${image}&name=${name}&privileged=${privileged}&stateless=${stateless}&force=${force}&default_environment=${default_env}' '$BASE_URL/actors/v2'"
 
 function filter() {
     eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
