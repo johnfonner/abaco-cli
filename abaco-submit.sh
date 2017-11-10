@@ -46,14 +46,6 @@ if [ -z "$actor" ]; then
 fi
 
 # check if $msg is JSON; if so, format
-function is_json() {
-    echo "$@" | jq -e . >/dev/null 2>&1
-}
-
-function format_json(){
-    echo ${@//\"/\\\"}
-}
-
 if ! [ -z "$msg" ] && $(is_json "$msg"); then
     msg="$(format_json "$msg")"
 fi
