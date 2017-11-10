@@ -1,9 +1,23 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" htts://api.sd2e.org/actors/v2/${actorid}/workers
-# curl -sk -H "Authorization: Bearer $tok" htts://api.sd2e.org/actors/v2/${actorid}/workers/${workerid}
+# curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers
+# curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers/${workerid}
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-workers [OPTION]...
+./abaco-workers [OPTION]... [ACTORID]
+
+Returns list of worker IDs and statuses or JSON description of worker if worker ID provided with -w flag
+
+Options:
+  -h	show help message
+  -a	actor ID
+  -w	worker ID
+  -v	verbose output
+"
+
+#function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

@@ -2,7 +2,18 @@
 
 # curl -sk -H "Authorization: Bearer $tok" -X POST --data "image=jturcino/abaco-d2s:0.0.17&name=jturcino-d2s-trial17&privileged=true" https://api.sd2e.org/actors/v2
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-delete.sh [OPTION]... [ACTORID]
+
+Deletes the actor corresponding to the given actor ID
+
+Options:
+  -h	show help message
+  -v	verbose output
+"
+
+#function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0;}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

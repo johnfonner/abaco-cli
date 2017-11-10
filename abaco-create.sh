@@ -2,7 +2,26 @@
 
 # curl -sk -H "Authorization: Bearer $tok" -X POST --data "image=jturcino/abaco-d2s:0.0.17&name=jturcino-d2s-trial17&privileged=true" https://api.sd2e.org/actors/v2
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-create.sh [OPTION]...
+./abaco-create.sh [OPTION]... [IMAGE]
+
+Creates an abaco actor from the provided image and returns the name and ID
+of the actor.
+
+Options:
+  -h	show help message
+  -i    image name and tag
+  -n    name of actor
+  -e    default environment variables (JSON)
+  -p    make privileged actor
+  -f    force actor update
+  -s    make stateless actor
+  -v    verbose output
+"
+
+# function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

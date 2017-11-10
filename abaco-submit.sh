@@ -2,7 +2,20 @@
 
 # curl -sk -H "Authorization: Bearer $tok" -X POST --data "message=" "https://api.sd2e.org/actors/v2/${actorid}/messages?outdir=${outdir}&system=${system}"
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-submit.sh [OPTION]... [ACTORID]
+
+Executes the actor with provided ID and returns execution ID
+
+Options:
+  -h	show help message
+  -m	value of actor env variable $MSG
+  -q	query string to pass to actor env
+  -v	verbose output
+"
+
+# function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

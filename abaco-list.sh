@@ -2,7 +2,19 @@
 
 #curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-list.sh [OPTION]...
+./abaco-list.sh [OPTION]... [ACTORID]
+
+Returns list of actor names, IDs, and statuses or JSON description of actor if ID provided
+
+Options:
+  -h	show help message
+  -v	verbose output
+"
+
+#function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

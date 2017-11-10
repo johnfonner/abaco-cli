@@ -2,7 +2,21 @@
 
 #curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2/lJbR84DxY5OmR/executions
 
-function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+HELP="
+./abaco-executions.sh [OPTION]...
+./abaco-executions.sh [OPTION]... [ACTORID]
+
+Returns list of execution IDs for the provided actor or JSON description of execution if execution ID provided with -e flag.
+
+Options:
+  -h	show help message
+  -a	actor ID
+  -e	execution ID
+  -v	verbose output
+"
+
+#function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
