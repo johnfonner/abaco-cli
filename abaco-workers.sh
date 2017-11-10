@@ -4,14 +4,12 @@
 # curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers/${workerid}
 
 HELP="
-./abaco-workers [OPTION]...
 ./abaco-workers [OPTION]... [ACTORID]
 
 Returns list of worker IDs and statuses or JSON description of worker if worker ID provided with -w flag
 
 Options:
   -h	show help message
-  -a	actor ID
   -w	worker ID
   -v	verbose output
 "
@@ -23,11 +21,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
-while getopts ":ha:vw:" o; do
+while getopts ":hvw:" o; do
     case "${o}" in
-        a) # actor
-            actor=${OPTARG}
-            ;;
         w) # worker
             worker=${OPTARG}
             ;;
@@ -41,13 +36,10 @@ while getopts ":ha:vw:" o; do
 done
 shift $((OPTIND-1))
 
+actor="$1"
 if [ -z "$actor" ]; then
-    if [ "x$1" == "x" ]; then
-        echo "Please specify actor"
-        usage
-    else
-        actor=$1
-    fi
+    echo "Please specify actor"
+    usage
 fi
 
 if [ -z "$worker" ]; then

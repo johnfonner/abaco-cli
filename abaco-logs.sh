@@ -3,13 +3,12 @@
 #curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2/lJbR84DxY5OmR/executions
 
 HELP="
-./abaco-logs.sh [OPTION]...
+./abaco-logs.sh [OPTION]... [ACTORID]
 
 Prints logs for actor and exection IDs provided -a and -e flags, respectively
 
 Options:
   -h 	show help message
-  -a	actor ID
   -e	execution ID
   -v	verbose output
 "
@@ -21,11 +20,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
-while getopts ":ha:ve:" o; do
+while getopts ":hve:" o; do
     case "${o}" in
-        a) # actor
-            actor=${OPTARG}
-            ;;
         e) # execution
             execution=${OPTARG}
             ;;
@@ -39,6 +35,7 @@ while getopts ":ha:ve:" o; do
 done
 shift $((OPTIND-1))
 
+actor="$1"
 if [ -z "$actor" ]; then
     echo "Please specify actor"
     usage

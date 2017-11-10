@@ -32,10 +32,11 @@ while getopts ":hv" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z $1 ]; then
+actor="$1"
+if [ -z "$actor" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2"
 else
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$1"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor"
     verbose="true"
 fi
 

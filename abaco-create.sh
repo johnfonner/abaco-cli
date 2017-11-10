@@ -3,7 +3,6 @@
 # curl -sk -H "Authorization: Bearer $tok" -X POST --data "image=jturcino/abaco-d2s:0.0.17&name=jturcino-d2s-trial17&privileged=true" https://api.sd2e.org/actors/v2
 
 HELP="
-./abaco-create.sh [OPTION]...
 ./abaco-create.sh [OPTION]... [IMAGE]
 
 Creates an abaco actor from the provided image and returns the name and ID
@@ -11,7 +10,6 @@ of the actor.
 
 Options:
   -h	show help message
-  -i    image name and tag
   -n    name of actor
   -e    default environment variables (JSON)
   -p    make privileged actor
@@ -31,11 +29,8 @@ privileged="false"
 stateless="false"
 force="false"
 
-while getopts ":hi:n:e:psfv" o; do
+while getopts ":hn:e:psfv" o; do
     case "${o}" in
-        i) # image repository, name, and tag
-            image=${OPTARG}
-            ;;
         n) # name
             name=${OPTARG}
             ;;
@@ -61,13 +56,10 @@ while getopts ":hi:n:e:psfv" o; do
 done
 shift $((OPTIND-1))
 
+image="$1"
 if [ -z "$image" ]; then
-    if [ "x$1" == "x" ]; then
-        echo "Please specify a Docker image to use for the actor"
-        usage
-    else
-        image=$1
-    fi
+    echo "Please specify a Docker image to use for the actor"
+    usage
 fi
 
 if [ -z "$name" ]; then

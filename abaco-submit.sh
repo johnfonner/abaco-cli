@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" -X POST --data "message=" "https://api.sd2e.org/actors/v2/${actorid}/messages?outdir=${outdir}&system=${system}"
+# curl -sk -H "Authorization: Bearer $tok" -X POST --data "message=" "https://api.sd2e.org/actors/v2/${actor}/messages?outdir=${outdir}&system=${system}"
 
 HELP="
 ./abaco-submit.sh [OPTION]... [ACTORID]
@@ -39,14 +39,13 @@ while getopts ":hm:q:v" o; do
 done
 shift $((OPTIND-1))
 
-# last arg at end should be actor id
-actorid="$1"
-if [ -z "$actorid" ]; then
+actor="$1"
+if [ -z "$actor" ]; then
     echo "Please give an actor ID at the end of the command"
     usage
 fi
 
-curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message='${msg}'\" \"$BASE_URL/actors/v2/${actorid}/messages?${query}\""
+curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message='${msg}'\" \"$BASE_URL/actors/v2/${actor}/messages?${query}\""
 
 function filter() {
     eval $@ | jq -r '.result | [.executionId, .msg] | @tsv' | column -t
