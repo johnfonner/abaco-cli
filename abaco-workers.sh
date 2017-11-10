@@ -4,7 +4,7 @@
 # curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers/${workerid}
 
 HELP="
-./abaco-workers [OPTION]... [ACTORID]
+./abaco-workers.sh [OPTION]... [ACTORID]
 
 Returns list of worker IDs and statuses or JSON description of worker if worker ID provided with -w flag
 
