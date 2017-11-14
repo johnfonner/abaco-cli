@@ -44,16 +44,23 @@ if [ -z "$execution" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions'"
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution'"
-    verbose="true"
+#    verbose="true"
 fi
 
-function filter() {
+function filter_list() {
     eval $@ | jq -r '.result | .ids | .[]' | column -t
+}
+
+function filter_description() {
+    eval $@ | jq -r '.result | [.workerId, .status] | @tsv' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand
 else
-    filter $curlCommand
+    if [ -z "$execution" ]; then
+        filter_list $curlCommand
+    else
+        filter_description $curlCommand
+    fi
 fi
-
