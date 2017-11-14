@@ -28,6 +28,7 @@ source "$DIR/common.sh"
 privileged="false"
 stateless="false"
 force="false"
+default_env={}
 
 while getopts ":hn:e:psfv" o; do
     case "${o}" in
@@ -67,7 +68,15 @@ if [ -z "$name" ]; then
     usage
 fi
 
-curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" --data 'image=${image}&name=${name}&privileged=${privileged}&stateless=${stateless}&force=${force}&default_environment=${default_env}' '$BASE_URL/actors/v2'"
+# check default env
+if ! [ -z "$default_env" ]; then
+    if ! $(is_json "$default_env"); then
+        echo "Default environment variables not formatted as JSON"
+        exit 0
+    fi
+fi
+
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"default_environment\":${default_env} }' '$BASE_URL/actors/v2'"
 
 function filter() {
     eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t

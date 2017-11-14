@@ -5,7 +5,8 @@
 HELP="
 ./abaco-submit.sh [OPTION]... [ACTORID]
 
-Executes the actor with provided ID and returns execution ID
+Executes the actor with provided ID and returns execution ID. Message (-m) 
+is required and can be string or JSON.
 
 Options:
   -h	show help message
@@ -45,15 +46,26 @@ if [ -z "$actor" ]; then
     usage
 fi
 
-# check if $msg is JSON; if so, format
-if ! [ -z "$msg" ] && $(is_json "$msg"); then
-    msg="$(format_json "$msg")"
+if [ -z "$msg" ]; then
+    echo "Please give a message (eg. "execute yourself") with the -m flag."
+    usage
 fi
 
-curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message=${msg}\" \"$BASE_URL/actors/v2/${actor}/messages?${query}\""
+# check if $msg is JSON; if so, add JSON header
+if ! [ -z "$msg" ] && $(is_json "$msg"); then
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\"  -X POST -H \"Content-Type: application/json\" -d '$msg' '$BASE_URL/actors/v2/${actor}/messages?${query}'"
+else
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message=${msg}\" '$BASE_URL/actors/v2/${actor}/messages?${query}'"
+fi
+
+#function filter() {
+#    eval $@ | jq -r '.result | [.executionId, .msg] | @tsv' | column -t
+#}
 
 function filter() {
-    eval $@ | jq -r '.result | [.executionId, .msg] | @tsv' | column -t
+    local output="$(eval $@ | jq -r '.result')"
+    echo $output | jq -r '.executionId'
+    echo $output | jq -r '.msg'
 }
 
 if [[ "$verbose" == "true" ]]; then
