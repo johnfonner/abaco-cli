@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers
-# curl -sk -H "Authorization: Bearer $tok" https://api.sd2e.org/actors/v2/${actorid}/workers/${workerid}
-
 HELP="
 ./abaco-workers.sh [OPTION]... [ACTORID]
 
-Returns list of worker IDs and statuses or JSON description of worker if worker ID provided with -w flag
+Returns list of worker IDs and statuses or JSON description of worker 
+if worker ID provided with -w flag
 
 Options:
   -h	show help message
@@ -43,9 +41,9 @@ if [ -z "$actor" ]; then
 fi
 
 if [ -z "$worker" ]; then
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/workers"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/workers'"
 else
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/workers/$worker"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/workers/$worker'"
     verbose="true"
 fi
 
@@ -58,4 +56,3 @@ if [[ "$verbose" == "true" ]]; then
 else
     filter $curlCommand
 fi
-

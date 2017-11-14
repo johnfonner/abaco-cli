@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" -X POST --data "image=jturcino/abaco-d2s:0.0.17&name=jturcino-d2s-trial17&privileged=true" https://api.sd2e.org/actors/v2
-
 HELP="
 ./abaco-create.sh [OPTION]... [IMAGE]
 

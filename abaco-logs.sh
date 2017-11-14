@@ -1,11 +1,10 @@
 #!/bin/bash
 
-#curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2/lJbR84DxY5OmR/executions
-
 HELP="
 ./abaco-logs.sh [OPTION]... [ACTORID]
 
-Prints logs for actor and exection IDs provided -a and -e flags, respectively
+Prints logs for actor and exection IDs provided, respectively. Both 
+inputs are required.
 
 Options:
   -h 	show help message
@@ -46,7 +45,7 @@ if [ -z "$execution" ]; then
     usage
 fi
 
-curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/executions/$execution/logs"
+curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution/logs'"
 
 function filter() {
     # eval $@ | jq -r '.result | ["logs:\n",.logs] | @tsv' 
@@ -58,4 +57,3 @@ if [[ "$verbose" == "true" ]]; then
 else
     filter $curlCommand
 fi
-

@@ -1,11 +1,10 @@
 #!/bin/bash
 
-#curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2/lJbR84DxY5OmR/executions
-
 HELP="
 ./abaco-executions.sh [OPTION]... [ACTORID]
 
-Returns list of execution IDs for the provided actor or JSON description of execution if execution ID provided with -e flag.
+Returns list of execution IDs for the provided actor or JSON description 
+of execution if execution ID provided with -e flag.
 
 Options:
   -h	show help message
@@ -42,9 +41,9 @@ if [ -z "$actor" ]; then
 fi
 
 if [ -z "$execution" ]; then
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/executions"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions'"
 else
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor/executions/$execution"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution'"
     verbose="true"
 fi
 

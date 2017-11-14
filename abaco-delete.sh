@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" -X POST --data "image=jturcino/abaco-d2s:0.0.17&name=jturcino-d2s-trial17&privileged=true" https://api.sd2e.org/actors/v2
-
 HELP="
 ./abaco-delete.sh [OPTION]... [ACTORID]
 
@@ -37,7 +35,7 @@ if [ -z "$actor" ]; then
     usage
 fi
 
-curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X DELETE $BASE_URL/actors/v2/${actor}"
+curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X DELETE '$BASE_URL/actors/v2/${actor}'"
 
 function filter() {
     eval $@ | jq -r '.message'

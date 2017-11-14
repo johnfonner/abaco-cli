@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# curl -sk -H "Authorization: Bearer $tok" -X POST --data "message=" "https://api.sd2e.org/actors/v2/${actor}/messages?outdir=${outdir}&system=${system}"
-
 HELP="
 ./abaco-submit.sh [OPTION]... [ACTORID]
 
@@ -57,10 +55,6 @@ if ! [ -z "$msg" ] && $(is_json "$msg"); then
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message=${msg}\" '$BASE_URL/actors/v2/${actor}/messages?${query}'"
 fi
-
-#function filter() {
-#    eval $@ | jq -r '.result | [.executionId, .msg] | @tsv' | column -t
-#}
 
 function filter() {
     local output="$(eval $@ | jq -r '.result')"

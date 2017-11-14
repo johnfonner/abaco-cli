@@ -1,12 +1,11 @@
 #!/bin/bash
 
-#curl -sk -H "Authorization: Bearer $tok" 'https://api.sd2e.org/actors/v2
-
 HELP="
 ./abaco-list.sh [OPTION]...
 ./abaco-list.sh [OPTION]... [ACTORID]
 
-Returns list of actor names, IDs, and statuses or JSON description of actor if ID provided
+Returns list of actor names, IDs, and statuses or JSON description of 
+actor if ID provided
 
 Options:
   -h	show help message
@@ -34,9 +33,9 @@ shift $((OPTIND-1))
 
 actor="$1"
 if [ -z "$actor" ]; then
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2'"
 else
-    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" $BASE_URL/actors/v2/$actor"
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor'"
     verbose="true"
 fi
 
@@ -49,4 +48,3 @@ if [[ "$verbose" == "true" ]]; then
 else
     filter $curlCommand
 fi
-
