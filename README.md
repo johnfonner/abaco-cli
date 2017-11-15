@@ -29,11 +29,11 @@ auth-tokens-refresh -S
 There are seven possible commands. They can be seen using the tab completion set up above; simply set up the `abaco` command and hit the tab key twice.
 ```
 $ ./abaco 
-create      delete      executions  list
-logs        submit      workers
+create    delete    executions    list
+logs      submit    workers
 ```
 
-Each command had a help message, which can be viewed with the `-h` flag. The `abaco` command also has a help message that overviews the function of each command, as shown below.
+Each command has a help message, which can be viewed with the `-h` flag. The `abaco` command also has a help message that overviews the function of each command, as shown below.
 ```
 $ ./abaco -h
 
@@ -43,22 +43,22 @@ Set of commands for interacting with abaco API. Options vary by
 command; use -h flag after command to view.
 
 Commands:
-  list, ls, actors, images	    list actors
+  list, ls, actors, images      list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
   workers, worker               view actor workers
   submit, run                   run actor
   executions                    view actor executions
-  logs				            view execution logs
+  logs                          view execution logs
 ```
 
 ## Tutorial
 
-Here, we'll outline the seven steps in the Abaco workflow using the commands in this cli. We use a [sample container](https://hub.docker.com/r/jturcino/abaco-docker-test/) called `jturcino/abaco-docker-test`. When run, it simply prints the actor's environmental and context variables (generated with [agavepy](https://github.com/TACC/agavepy)).
+Here, we'll outline the seven steps in the Abaco workflow using the commands in this cli. We use a [sample container](https://hub.docker.com/r/jturcino/abaco-gen-trial/) called `jturcino/abaco-gen-trial:0.0.1`. When run, it simply prints the actor's environmental and context variables (generated with [agavepy](https://github.com/TACC/agavepy)).
 
 1. **Create the actor** with `abaco create` using a Docker container. The command outputs the actor's name and ID.
 ```
-$ ./abaco create -n tutorial-example jturcino/abaco-docker-test
+$ ./abaco create -n tutorial-example jturcino/abaco-gen-trial:0.0.1
 tutorial-example  Wyx0x356VoNyN
 ```
 
@@ -68,7 +68,7 @@ tutorial-example  Wyx0x356VoNyN
 tutorial-example    Wyx0x356VoNyN    READY
 ```
 
-3. **Run the actor** with `abaco submit` once the status is `READY`. Pass information to the actor with the `-m` flag as a string or as JSON (here using JSON). Be sure to append the actor ID to the end of the command. The command outputs the execution ID and the `-m` input.
+3. **Run the actor** with `abaco submit` once the status is `READY`. Pass information to the actor with the `-m` flag as a string or as JSON (here using JSON); this information will be available in the agavepy context and environmental variables as `MSG`. Be sure to append the actor ID to the end of the command. The command outputs the execution ID and `MSG` input.
 ```
 $ msg='{"key1":"value1", "key2":"value2"}'
 $ ./abaco submit -m "$msg" Wyx0x356VoNyN
@@ -79,7 +79,7 @@ QZ10OLzA3XDW6
 }
 ```
 
-4. **Check job status** with `abaco executions`. Providing only the actor ID lists all execution IDs associated with that actor. Providing the exection ID (output from `abaco-submit`) with the `-e` flag returns the job's worker ID and status.
+4. **Check job status** with `abaco executions`. Providing only the actor ID lists all execution IDs associated with that actor. Providing the execution ID (output from `abaco-submit`) with the `-e` flag returns the job's status and worker ID.
 ```
 $ ./abaco executions -e QZ10OLzA3XDW6 Wyx0x356VoNyN
 vaO8x0D8q16Y5  COMPLETE
