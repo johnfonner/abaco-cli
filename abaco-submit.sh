@@ -50,9 +50,10 @@ if [ -z "$msg" ]; then
 fi
 
 # check if $msg is JSON; if so, add JSON header
-if ! [ -z "$msg" ] && $(is_json "$msg"); then
+if $(is_json "$msg"); then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\"  -X POST -H \"Content-Type: application/json\" -d '$msg' '$BASE_URL/actors/v2/${actor}/messages?${query}'"
 else
+    msg="$(single_quote "$msg")"
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST --data \"message=${msg}\" '$BASE_URL/actors/v2/${actor}/messages?${query}'"
 fi
 

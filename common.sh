@@ -17,7 +17,11 @@ function is_json() {
     echo "$@" | jq -e . >/dev/null 2>&1
 }
 
-function format_json(){
-    echo ${@//\"/\\\"}
+function single_quote() {
+    local str="$1"
+    local first_char="$(echo "$str" | head -c 1)"
+    if ! [ "$first_char" == "'" ]; then
+        str="'$str'"
+    fi
+    echo "$str"
 }
-
