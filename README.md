@@ -3,25 +3,26 @@
 Command line interface for working with the Abaco (Actor Based Containers) API
 
 Dependencies:
-* jq
+* [jq](https://stedolan.github.io/jq/)
 * getopts
+* [Agave CLI](https://bitbucket.org/agaveapi/cli)
 
 ## Installation
 
 ```
-git clone https://github.com/johnfonner/abaco-cli.git
+$ git clone https://github.com/johnfonner/abaco-cli.git
 ```
 
 ## Set up
 
-First, set up bash completion.
+Enable bash completion.
 ```
-source abaco-completion.sh
+$ source abaco-completion.sh
 ```
 
-Now, pull a new access token using the [Agave CLI](https://bitbucket.org/agaveapi/cli).
+Pull a new access token using the Agave CLI.
 ```
-auth-tokens-refresh -S
+$ auth-tokens-refresh -S
 ```
 
 ## Usage
@@ -62,13 +63,13 @@ $ ./abaco create -n tutorial-example jturcino/abaco-gen-trial:0.0.1
 tutorial-example  Wyx0x356VoNyN
 ```
 
-2. **Check actor status** with `abaco list`. The command outputs all actor names, IDs, and statuses. To view a detailed JSON description, use the `-v` flag and append the actor ID to the end of the command.
+2. **Check actor's status** with `abaco list`. The command outputs all actor names, IDs, and statuses. To view a detailed JSON description, use the `-v` flag and append the actor ID to the end of the command.
 ```
 ./abaco list 
 tutorial-example    Wyx0x356VoNyN    READY
 ```
 
-3. **Run the actor** with `abaco submit` once the status is `READY`. Pass information to the actor with the `-m` flag as a string or as JSON (here using JSON); this information will be available in the agavepy context and environmental variables as `MSG`. Be sure to append the actor ID to the end of the command. The command outputs the execution ID and `MSG` input.
+3. **Run the actor** with `abaco submit` once the status is `READY`. Pass information to the actor with the `-m` flag as a string or as JSON (here using JSON); this information will be available as a dictionary under `message_dict`. Be sure to append the actor ID to the end of the command. The command outputs the execution ID and `MSG` input.
 ```
 $ msg='{"key1":"value1", "key2":"value2"}'
 $ ./abaco submit -m "$msg" Wyx0x356VoNyN
@@ -125,7 +126,8 @@ FULL CONTEXT:
 
 MESSAGE:
 {
-  "json": "msg"
+    "key1": "value1",
+    "key2": "value2"
 }
 
 FULL ENVIRONMENT:
