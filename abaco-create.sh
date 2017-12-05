@@ -74,7 +74,7 @@ if ! [ -z "$default_env" ]; then
     fi
 fi
 
-curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"default_environment\":${default_env} }' '$BASE_URL/actors/v2'"
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"defaultEnvironment\":${default_env} }' '$BASE_URL/actors/v2'"
 
 function filter() {
     eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
