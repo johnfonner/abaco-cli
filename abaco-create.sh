@@ -13,6 +13,7 @@ Options:
   -p    make privileged actor
   -f    force actor update
   -s    make stateless actor
+  -u    use actor uid
   -v    verbose output
 "
 
@@ -26,9 +27,10 @@ source "$DIR/common.sh"
 privileged="false"
 stateless="false"
 force="false"
+use_uid="false"
 default_env={}
 
-while getopts ":hn:e:psfv" o; do
+while getopts ":hn:e:pfsuv" o; do
     case "${o}" in
         n) # name
             name=${OPTARG}
@@ -44,6 +46,9 @@ while getopts ":hn:e:psfv" o; do
             ;;
         s) # stateless
             stateless="true"
+            ;;
+        u) # use uid
+            use_uid="true"
             ;;
         v) # verbose
             verbose="true"
@@ -74,7 +79,7 @@ if ! [ -z "$default_env" ]; then
     fi
 fi
 
-curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"defaultEnvironment\":${default_env} }' '$BASE_URL/actors/v2'"
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env} }' '$BASE_URL/actors/v2'"
 
 function filter() {
     eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
