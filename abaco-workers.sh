@@ -4,10 +4,11 @@ HELP="
 ./abaco-workers.sh [OPTION]... [ACTORID]
 
 Returns list of worker IDs and statuses or JSON description of worker 
-if worker ID provided with -w flag
+if worker ID provided with -w flag. Use -n flag to change worker count.
 
 Options:
   -h	show help message
+  -n    change worker number
   -w	worker ID
   -v	verbose output
 "
@@ -19,10 +20,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
-while getopts ":hvw:" o; do
+while getopts ":hvw:n:" o; do
     case "${o}" in
         w) # worker
             worker=${OPTARG}
+            ;;
+        n) # worker number
+            num=${OPTARG}
             ;;
         v) # verbose
             verbose="true"
@@ -40,7 +44,9 @@ if [ -z "$actor" ]; then
     usage
 fi
 
-if [ -z "$worker" ]; then
+if ! [ -z "$num" ]; then
+    curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST -d 'num=$num' '$BASE_URL/actors/v2/$actor/workers'"
+elif [ -z "$worker" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/workers'"
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/workers/$worker'"
@@ -48,7 +54,11 @@ else
 fi
 
 function filter() {
-    eval $@ | jq -r '.result | .[] | [.id, .status] | @tsv' | column -t
+    if ! [ -z "$num" ]; then
+        eval $@ | jq -r '.message'
+    else
+        eval $@ | jq -r '.result | .[] | [.id, .status] | @tsv' | column -t
+    fi
 }
 
 if [[ "$verbose" == "true" ]]; then
