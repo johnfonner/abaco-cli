@@ -52,7 +52,8 @@ function filter_list() {
 }
 
 function filter_description() {
-    eval $@ | jq -r '.result | [.workerId, .status] | @tsv' | column -t
+#    eval $@ | jq -r '.result | [.workerId, .status] | @tsv' | column -t
+    eval $@ | jq -r '.result | [.workerId, .status] | "\(.[0]) \(.[1])"' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then

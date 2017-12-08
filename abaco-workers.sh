@@ -57,7 +57,8 @@ function filter() {
     if ! [ -z "$num" ]; then
         eval $@ | jq -r '.message'
     else
-        eval $@ | jq -r '.result | .[] | [.id, .status] | @tsv' | column -t
+#        eval $@ | jq -r '.result | .[] | [.id, .status] | @tsv' | column -t
+        eval $@ | jq -r '.result | .[] | [.id, .status] | "\(.[0]) \(.[1])"' | column -t
     fi
 }
 

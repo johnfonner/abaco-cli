@@ -82,7 +82,8 @@ fi
 curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env} }' '$BASE_URL/actors/v2'"
 
 function filter() {
-    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
+#    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result | [.name, .id] |  "\(.[0]) \(.[1])"' | column -t
 }
 
 if [[ "$verbose" == "true" ]]; then
