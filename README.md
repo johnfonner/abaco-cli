@@ -2,10 +2,7 @@
 
 Command line interface for working with the Abaco (Actor Based Containers) API
 
-Dependencies:
-* [jq](https://stedolan.github.io/jq/)
-* getopts
-* [Agave CLI](https://bitbucket.org/agaveapi/cli)
+Dependent upon [jq](https://stedolan.github.io/jq/), getopts, and the [Agave CLI](https://bitbucket.org/agaveapi/cli)
 
 ## Installation
 
@@ -20,7 +17,7 @@ Enable bash completion.
 $ source abaco-completion.sh
 ```
 
-Pull a new access token using the Agave CLI.
+Pull and cache a valid access token using the Agave CLI.
 ```
 $ auth-tokens-refresh -S
 ```
@@ -47,7 +44,7 @@ Commands:
   list, ls, actors, images      list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
-  workers, worker               view actor workers
+  workers, worker               view and add workers
   submit, run                   run actor
   executions                    view actor executions
   logs                          view execution logs
@@ -55,7 +52,7 @@ Commands:
 
 ## Tutorial
 
-Here, we'll outline the seven steps in the Abaco workflow using the commands in this cli. We use a [sample container](https://hub.docker.com/r/jturcino/abaco-gen-trial/) called `jturcino/abaco-gen-trial:0.0.1`. When run, it simply prints the actor's environmental and context variables (generated with [agavepy](https://github.com/TACC/agavepy)).
+Here, we'll outline the seven steps in the Abaco workflow using the commands in this cli. We use a [sample container](https://hub.docker.com/r/jturcino/abaco-cli-trial/) called `jturcino/abaco-cli-trial:latest`. When run, it simply prints the actor's environmental and context variables generated via [agavepy](https://github.com/TACC/agavepy).
 
 1. **Create the actor** with `abaco create` using a Docker container. The command outputs the actor's name and ID.
 ```
@@ -72,7 +69,7 @@ tutorial-example    Wyx0x356VoNyN    READY
 3. **Run the actor** with `abaco submit` once the status is `READY`. Pass information to the actor with the `-m` flag as a string or as JSON (here using JSON); this information will be available as a dictionary under `message_dict`. Be sure to append the actor ID to the end of the command. The command outputs the execution ID and `MSG` input.
 ```
 $ msg='{"key1":"value1", "key2":"value2"}'
-$ ./abaco submit -m "$msg" Wyx0x356VoNyN
+$ ./abaco submit -m $msg Wyx0x356VoNyN
 QZ10OLzA3XDW6
 {
   "key1": "value1",

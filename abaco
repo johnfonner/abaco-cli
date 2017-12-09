@@ -10,7 +10,7 @@ Commands:
   list, ls, actors, images	list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
-  workers, worker               view actor workers
+  workers, worker               view and add workers
   submit, run                   run actor
   executions                    view actor executions
   logs				view execution logs
