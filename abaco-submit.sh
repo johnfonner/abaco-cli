@@ -12,6 +12,7 @@ is required and can be string or JSON.
 
 Options:
   -h	show help message
+  -z    api access token
   -m	value of actor env variable $MSG
   -q	query string to pass to actor env
   -v	verbose output
@@ -23,9 +24,13 @@ function usage() { echo "$HELP"; exit 0; }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
+tok=
 
-while getopts ":hm:q:v" o; do
+while getopts ":hm:q:vz:" o; do
     case "${o}" in
+        z) # custom token
+            tok=${OPTARG}
+            ;;        
         m) # msg to pass to actor environment as $MSG
             msg=${OPTARG}
             ;;
@@ -41,6 +46,8 @@ while getopts ":hm:q:v" o; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ ! -z "$tok" ]; then TOKEN=$tok; fi
 
 actor="$1"
 if [ -z "$actor" ]; then

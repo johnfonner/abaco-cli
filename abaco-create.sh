@@ -12,6 +12,7 @@ of the actor.
 
 Options:
   -h	show help message
+  -z    api access token
   -n    name of actor
   -e    default environment variables (JSON)
   -p    make privileged actor
@@ -33,9 +34,13 @@ stateless="false"
 force="false"
 use_uid="false"
 default_env={}
+tok=
 
-while getopts ":hn:e:pfsuv" o; do
+while getopts ":hn:e:pfsuvz:" o; do
     case "${o}" in
+        z) # custom token
+            tok=${OPTARG}
+            ;;
         n) # name
             name=${OPTARG}
             ;;
@@ -64,6 +69,8 @@ while getopts ":hn:e:pfsuv" o; do
 done
 shift $((OPTIND-1))
 
+if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+    
 image="$1"
 if [ -z "$image" ]; then
     echo "Please specify a Docker image to use for the actor"
