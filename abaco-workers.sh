@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-workers.sh [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID]
 
 Returns list of worker IDs and statuses or JSON description of worker 
 if worker ID provided with -w flag. Use -n flag to change worker count.

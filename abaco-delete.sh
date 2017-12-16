@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-delete.sh [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID]
 
 Deletes the actor corresponding to the given actor ID
 

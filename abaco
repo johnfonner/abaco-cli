@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 
-HELP="
-./abaco [COMMAND] [OPTION]...
+THIS=$(basename $0)
 
-Set of commands for interacting with abaco API. Options vary by 
-command; use -h flag after command to view.
+HELP="
+Usage: ${THIS} [COMMAND] [OPTION]...
+
+Set of commands for interacting with Abaco API. Options vary by 
+command; use -h flag after command to view usage details.
 
 Commands:
-  list, ls, actors, images	list actors
+  list, ls, actors, images	    list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
   workers, worker               view and add workers
   submit, run                   run actor
   executions                    view actor executions
-  logs				view execution logs
+  logs				                  view execution logs
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-executions.sh [OPTION]... [ACTORID]
+Usage: ${THIS}[OPTION]... [ACTORID]
 
 Returns list of execution IDs for the provided actor or JSON description 
 of execution if execution ID provided with -e flag.
