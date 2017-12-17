@@ -20,6 +20,7 @@ Options:
   -s    make stateless actor
   -u    use actor uid
   -v    verbose output
+  -V    very verbose output
 "
 
 # function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
@@ -36,7 +37,7 @@ use_uid="false"
 default_env={}
 tok=
 
-while getopts ":hn:e:pfsuvz:" o; do
+while getopts ":hn:e:pfsuvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -62,6 +63,9 @@ while getopts ":hn:e:pfsuvz:" o; do
         v) # verbose
             verbose="true"
             ;;
+        V) # verbose
+            very_verbose="true"
+            ;;
         h | *) # print help text
             usage
             ;;
@@ -70,6 +74,10 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
     
 image="$1"
 if [ -z "$image" ]; then
@@ -96,6 +104,11 @@ function filter() {
 #    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
     eval $@ | jq -r '.result | [.name, .id] |  "\(.[0]) \(.[1])"' | column -t
 }
+
+if [[ "$very_verbose" == "true" ]];
+then
+    echo "Calling $curlCommand"
+fi
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand

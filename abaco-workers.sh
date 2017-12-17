@@ -16,6 +16,7 @@ Options:
   -n    change worker count
   -w	worker ID
   -v	verbose output
+  -V    very verbose output
 "
 
 #function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
@@ -26,7 +27,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 tok=
 
-while getopts ":hvw:n:z:" o; do
+while getopts ":hvw:n:z:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -40,6 +41,9 @@ while getopts ":hvw:n:z:" o; do
         v) # verbose
             verbose="true"
             ;;
+        V) # verbose
+            very_verbose="true"
+            ;;            
         h | *) # print help text
             usage
             ;;
@@ -48,12 +52,17 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
 
 actor="$1"
 if [ -z "$actor" ]; then
     echo "Please specify actor"
     usage
 fi
+
 
 if ! [ -z "$num" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X POST -d 'num=$num' '$BASE_URL/actors/v2/$actor/workers'"
@@ -72,6 +81,11 @@ function filter() {
         eval $@ | jq -r '.result | .[] | [.id, .status] | "\(.[0]) \(.[1])"' | column -t
     fi
 }
+
+if [[ "$very_verbose" == "true" ]];
+then
+    echo "Calling $curlCommand"
+fi
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand

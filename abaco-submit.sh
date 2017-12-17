@@ -16,6 +16,7 @@ Options:
   -m	value of actor env variable $MSG
   -q	query string to pass to actor env
   -v	verbose output
+  -V    very verbose output
 "
 
 # function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
@@ -26,7 +27,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 tok=
 
-while getopts ":hm:q:vz:" o; do
+while getopts ":hm:q:vz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -40,6 +41,9 @@ while getopts ":hm:q:vz:" o; do
         v) # verbose
             verbose="true"
             ;;
+        V) # verbose
+            very_verbose="true"
+            ;;
         h | *) # print help text
             usage
             ;;
@@ -48,6 +52,10 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
 
 actor="$1"
 if [ -z "$actor" ]; then
@@ -73,6 +81,11 @@ function filter() {
     echo $output | jq -r '.executionId'
     echo $output | jq -r '.msg'
 }
+
+if [[ "$very_verbose" == "true" ]];
+then
+    echo "Calling $curlCommand"
+fi
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand

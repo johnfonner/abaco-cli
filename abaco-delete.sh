@@ -13,6 +13,7 @@ Options:
   -h	show help message
   -z    api access token
   -v	verbose output
+  -V    very verbose output
 "
 
 #function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
@@ -23,7 +24,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 tok=
 
-while getopts ":hvz:" o; do
+while getopts ":hvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -31,6 +32,9 @@ while getopts ":hvz:" o; do
         v) # verbose
             verbose="true"
             ;;
+        V) # verbose
+            very_verbose="true"
+            ;;            
         h | *) # print help text
             usage
             ;;
@@ -39,6 +43,10 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
 
 actor="$1"
 if [ -z "$actor" ]; then
@@ -51,6 +59,11 @@ curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" -X DELETE '$BASE_URL/a
 function filter() {
     eval $@ | jq -r '.message'
 }
+
+if [[ "$very_verbose" == "true" ]];
+then
+    echo "Calling $curlCommand"
+fi
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand
