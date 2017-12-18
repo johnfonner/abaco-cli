@@ -12,7 +12,8 @@ if worker ID provided with -w flag. Use -n flag to change worker count.
 
 Options:
   -h	show help message
-  -n    change worker number
+  -z    api access token
+  -n    change worker count
   -w	worker ID
   -v	verbose output
 "
@@ -23,9 +24,13 @@ function usage() { echo "$HELP"; exit 0; }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
+tok=
 
-while getopts ":hvw:n:" o; do
+while getopts ":hvw:n:z:" o; do
     case "${o}" in
+        z) # custom token
+            tok=${OPTARG}
+            ;;        
         w) # worker
             worker=${OPTARG}
             ;;
@@ -41,6 +46,8 @@ while getopts ":hvw:n:" o; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ ! -z "$tok" ]; then TOKEN=$tok; fi
 
 actor="$1"
 if [ -z "$actor" ]; then

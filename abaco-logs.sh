@@ -12,6 +12,7 @@ inputs are required.
 
 Options:
   -h 	show help message
+  -z    api access token
   -e	execution ID
   -v	verbose output
 "
@@ -22,9 +23,13 @@ function usage() { echo "$HELP"; exit 0; }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
+tok=
 
-while getopts ":hve:" o; do
+while getopts ":hve:z:" o; do
     case "${o}" in
+        z) # custom token
+            tok=${OPTARG}
+            ;;             
         e) # execution
             execution=${OPTARG}
             ;;
@@ -37,6 +42,8 @@ while getopts ":hve:" o; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ ! -z "$tok" ]; then TOKEN=$tok; fi
 
 actor="$1"
 if [ -z "$actor" ]; then
