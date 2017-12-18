@@ -15,6 +15,7 @@ Options:
   -z    api access token
   -e	execution ID
   -v	verbose output
+  -V    very verbose output
 "
 
 # function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
@@ -25,7 +26,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 tok=
 
-while getopts ":hve:z:" o; do
+while getopts ":hve:z:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -36,6 +37,9 @@ while getopts ":hve:z:" o; do
         v) # verbose
             verbose="true"
             ;;
+        V) # verbose
+            very_verbose="true"
+            ;;
         h | *) # print help text
             usage
             ;;
@@ -44,6 +48,10 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
 
 actor="$1"
 if [ -z "$actor" ]; then
@@ -62,6 +70,11 @@ function filter() {
     # eval $@ | jq -r '.result | ["logs:\n",.logs] | @tsv' 
     echo -e "\033[92mLogs for execution $execution:\033[0m" && eval $@ | jq -r '.result | .logs ' | sed 's/\\n/\n/g'
 }
+
+if [[ "$very_verbose" == "true" ]];
+then
+    echo "Calling $curlCommand"
+fi
 
 if [[ "$verbose" == "true" ]]; then
     eval $curlCommand
