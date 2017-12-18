@@ -1,8 +1,12 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-list.sh [OPTION]...
-./abaco-list.sh [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]...
+       ${THIS} [OPTION]... [ACTORID]
 
 Returns list of actor names, IDs, and statuses or JSON description of 
 actor if ID provided

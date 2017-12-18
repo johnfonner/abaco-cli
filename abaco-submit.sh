@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-submit.sh [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID]
 
 Executes the actor with provided ID and returns execution ID. Message (-m) 
 is required and can be string or JSON.

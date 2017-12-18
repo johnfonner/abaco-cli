@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-logs.sh [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID]
 
 Prints logs for actor and exection IDs provided, respectively. Both 
 inputs are required.

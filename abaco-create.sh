@@ -1,7 +1,11 @@
 #!/bin/bash
 
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
 HELP="
-./abaco-create.sh [OPTION]... [IMAGE]
+Usage: ${THIS} [OPTION]... [IMAGE]
 
 Creates an abaco actor from the provided image and returns the name and ID
 of the actor.
