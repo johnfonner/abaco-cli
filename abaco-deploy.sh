@@ -210,3 +210,6 @@ fi
 
 echo "abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET}"
 
+# TODO: Add/update the alias registry if provided
+# This uses REACTOR_ALIAS and the optional message.jsonschema
+
