@@ -25,3 +25,16 @@ function single_quote() {
     fi
     echo "$str"
 }
+
+function die() {
+
+    echo "[CRITICAL] $1"
+    exit 1
+
+}
+
+function warn() {
+
+    echo "[WARNING] $1"
+
+}

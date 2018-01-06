@@ -16,6 +16,7 @@ Commands:
   submit, run                   run actor
   executions                    view actor executions
   logs				view execution logs
+  deploy                        build and deploy an actor
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -41,6 +42,9 @@ case "$1" in
 
   logs)                         shift;
         $DIR/abaco-logs.sh "$@";;
+
+  deploy)                         shift;
+        $DIR/abaco-deploy.sh "$@";;
 
   *) 				shift;
 	echo "$HELP"; exit 0;;

@@ -1,0 +1,212 @@
+#!/bin/bash
+
+THIS=$(basename $0)
+THIS=${THIS%.sh}
+THIS=${THIS//[-]/ }
+
+HELP="
+Usage: ${THIS} [OPTION]... [ACTORID]
+
+Build and deploy an Abaco actor from a local directory.
+Requires Docker version 17.03.0-ce or higher, push access to a
+Docker registry, and specifically-configured local directory.
+
+Options:
+  -h    show help message
+  -F    Docker file (Dockerfile)
+  -B    build config file (reactor.rc)
+  -z    api access token
+  -n    name of actor
+  -e    default environment variables (JSON)
+  -p    make privileged actor
+  -f    force actor update
+  -s    make stateless actor
+  -u    use actor uid
+  -v    verbose output
+  -V    very verbose output
+"
+
+# function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
+function usage() { echo "$HELP"; exit 0; }
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source "$DIR/common.sh"
+
+dockerfile="Dockerfile"
+config_rc="reactor.rc"
+entrypoint="reactor.py"
+
+privileged="false"
+stateless="false"
+force="false"
+use_uid="false"
+default_env={}
+tok=
+
+while getopts ":hn:e:pfsuz:F:B:E:" o; do
+    case "${o}" in
+        F) # Dockerfile
+            dockerfile=${OPTARG}
+            ;;
+        B) # reactor build config
+            config_rc=${OPTARG}
+            ;;
+        E) # actor entrypoint file
+            entrypoint=${OPTARG}
+            ;;            
+        z) # custom token
+            tok=${OPTARG}
+            ;;
+        n) # name
+            name=${OPTARG}
+            ;;
+        e) # default environment (JSON)
+            default_env=${OPTARG}
+            ;;
+        p) # privileged
+            privileged="true"
+            ;;
+        f) # force image update
+            force="true"
+            ;;
+        s) # stateless
+            stateless="true"
+            ;;
+        u) # use uid
+            use_uid="true"
+            ;;
+        h | *) # print help text
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ ! -z "$tok" ]; then TOKEN=$tok; fi
+if [[ "$very_verbose" == "true" ]];
+then
+    verbose="true"
+fi
+
+# Check for mandatory files
+for mandfile in $dockerfile $config_rc $entrypoint
+do
+  if [ ! -f "$mandfile" ];
+  then
+    die "Cannot proceed without file $mandfile"
+  fi
+done
+
+# Look for optional files
+for optfile in config.yml message.jsonschema
+do
+  if [ ! -f "$optfile" ];
+  then
+    warn "Optional file $optfile not present"
+  fi
+done
+
+# Check existence and min version of Docker
+command -v docker >/dev/null 2>&1 || { die "Docker is not installed or accessible"; }
+DOCKER_VERSION="$(docker --version)"
+if [[ ! "$DOCKER_VERSION" =~ "Docker version 17" ]];
+then
+  die "${DOCKER_VERSION} is not recent enough."
+fi
+# Verify the user is logged into a Registry
+# This isn't formal validation that they can
+# push to one, but is a decent sanity check for
+# users who don't yet know about docker login
+DOCKER_AUTHS="$(jq -r .auths $HOME/.docker/config.json)"
+if [[ "${DOCKER_AUTHS}" == "{}" ]]
+then
+  die "You don't appear to be logged into a Docker Registry. Please run docker login to fix this."
+fi
+
+# Allow default set in ENV
+ENV_DOCKER_HUB_ORG="${DOCKER_HUB_ORG}"
+
+# Read in config variables
+REACTOR_NAME=
+REACTOR_DESCRIPTION=
+# Docker image
+DOCKER_HUB_ORG=
+DOCKER_IMAGE_TAG=
+DOCKER_IMAGE_VERSION=
+
+set -a
+source "${config_rc}"
+set +a
+
+# Validate that the ones that are not supposed to be empty... aren't empty
+# Automatically assign values where we can
+if [ -z "${DOCKER_HUB_ORG}" ]
+then
+  if [ ! -z "${ENV_DOCKER_HUB_ORG}" ]
+  then
+    DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
+    export DOCKER_HUB_ORG
+  else
+    die "DOCKER_HUB_ORG cannot be empty. Set in ENV or in $config_rc"
+  fi
+fi
+
+if [ -z "${DOCKER_IMAGE_TAG}" ]
+then
+  die "DOCKER_IMAGE_TAG cannot be empty in $config_rc"
+fi
+
+# Reactor values
+if [ -z "${REACTOR_NAME}" ]
+then
+  warn "REACTOR_NAME is empty so we're naming it for you. Don't you love your Reactor?"
+  source "$DIR/libs/petname.sh"
+  export REACTOR_NAME=$(petname 3)
+  echo "${REACTOR_NAME}"
+fi
+
+if [ -z "${REACTOR_DESCRIPTION}" ]
+then
+  warn "REACTOR_DESCRIPTION is empty, so we're cooking up a tasty description for you."
+  REACTOR_DESCRIPTION=$(curl -skL 'https://baconipsum.com/api/?type=all-meat&sentences=1' | jq -r .[0])
+  echo "${REACTOR_DESCRIPTION}"
+  export REACTOR_DESCRIPTION
+fi
+
+# TODO: Read in more abaco config vars (stateless etc)
+
+# Docker stuff
+DOCKER_BUILD_TARGET="${DOCKER_HUB_ORG}/${DOCKER_IMAGE_TAG}"
+if [ ! -z "${DOCKER_IMAGE_VERSION}" ]
+then
+  DOCKER_BUILD_TARGET="${DOCKER_BUILD_TARGET}:${DOCKER_IMAGE_VERSION}"
+else
+  warn "It is considered a best practice to specify a version for a Docker image"
+  warn "Do this by setting DOCKER_IMAGE_VERSION in $config_rc"
+fi
+export DOCKER_BUILD_TARGET
+
+# Try Docker build
+#docker build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+
+# Try Docker push
+#docker push "${DOCKER_BUILD_TARGET}" . || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }
+
+# Now, build abaco create CLI and call it - don't reinvent the wheel by re-writing 'abaco create'
+ABACO_CREATE_OPTS="-n ${REACTOR_NAME}"
+if [ "${REACTOR_STATELESS}" == 1 ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
+fi
+if [ "${REACTOR_PRIVILEGED}" == 1 ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -p"
+fi
+if [ "${REACTOR_USE_UID}" == 1 ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
+fi
+
+echo "abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET}"
+
