@@ -16,6 +16,7 @@ Commands:
   submit, run                   run actor
   executions                    view actor executions
   logs				view execution logs
+  init                          create a new actor project
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

@@ -5,7 +5,7 @@ _abaco () {
     local prev cur
     cur=${COMP_WORDS[COMP_CWORD]}
 
-    local commands="list create delete workers submit executions logs"
+    local commands="list create delete workers submit executions logs init"
 
     COMPREPLY=( $(compgen -W "$commands" -- $cur) )
 

@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$id": "http://sd2e.org/reactors/message.json",
+    "title": "AbacoMessage",
+    "description": "Generic Abaco JSON message",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "A unique identifier for the message",
+            "type": "string"
+        }
+    },
+    "required": ["id"]
+}
