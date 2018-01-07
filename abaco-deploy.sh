@@ -7,26 +7,18 @@ THIS=${THIS//[-]/ }
 HELP="
 Usage: ${THIS} [OPTION]... [ACTORID]
 
-Build and deploy an Abaco actor from a local directory.
+Build and deploy an Abaco actor from a local project directory.
 Requires Docker version 17.03.0-ce or higher, push access to a
-Docker registry, and specifically-configured local directory.
+Docker registry, and a properly-configired source directory.
 
 Options:
   -h    show help message
+  -z    api access token
   -F    Docker file (Dockerfile)
   -B    build config file (reactor.rc)
-  -z    api access token
-  -n    name of actor
   -e    default environment variables (JSON)
-  -p    make privileged actor
-  -f    force actor update
-  -s    make stateless actor
-  -u    use actor uid
-  -v    verbose output
-  -V    very verbose output
 "
 
-# function usage() { echo "$0 usage:" && grep " .)\ #" $0; exit 0; }
 function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -55,26 +47,11 @@ while getopts ":hn:e:pfsuz:F:B:E:" o; do
         E) # actor entrypoint file
             entrypoint=${OPTARG}
             ;;            
-        z) # custom token
+        z) # API token
             tok=${OPTARG}
-            ;;
-        n) # name
-            name=${OPTARG}
             ;;
         e) # default environment (JSON)
             default_env=${OPTARG}
-            ;;
-        p) # privileged
-            privileged="true"
-            ;;
-        f) # force image update
-            force="true"
-            ;;
-        s) # stateless
-            stateless="true"
-            ;;
-        u) # use uid
-            use_uid="true"
             ;;
         h | *) # print help text
             usage
@@ -89,6 +66,9 @@ then
     verbose="true"
 fi
 
+# Check for existing Actor ID
+current_actor="$1"
+
 # Check for mandatory files
 for mandfile in $dockerfile $config_rc $entrypoint
 do
@@ -99,7 +79,7 @@ do
 done
 
 # Look for optional files
-for optfile in config.yml message.jsonschema
+for optfile in config.yml message.json
 do
   if [ ! -f "$optfile" ];
   then
@@ -130,6 +110,10 @@ ENV_DOCKER_HUB_ORG="${DOCKER_HUB_ORG}"
 # Read in config variables
 REACTOR_NAME=
 REACTOR_DESCRIPTION=
+REACTOR_STATELESS=
+REACTOR_PRIVILEGED=
+REACTOR_USE_UID=
+
 # Docker image
 DOCKER_HUB_ORG=
 DOCKER_IMAGE_TAG=
@@ -148,7 +132,7 @@ then
     DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
     export DOCKER_HUB_ORG
   else
-    die "DOCKER_HUB_ORG cannot be empty. Set in ENV or in $config_rc"
+    die "DOCKER_HUB_ORG must be your username or organization. Set in ENV or in $config_rc"
   fi
 fi
 
@@ -166,15 +150,13 @@ then
   echo "${REACTOR_NAME}"
 fi
 
-if [ -z "${REACTOR_DESCRIPTION}" ]
-then
-  warn "REACTOR_DESCRIPTION is empty, so we're cooking up a tasty description for you."
-  REACTOR_DESCRIPTION=$(curl -skL 'https://baconipsum.com/api/?type=all-meat&sentences=1' | jq -r .[0])
-  echo "${REACTOR_DESCRIPTION}"
-  export REACTOR_DESCRIPTION
-fi
-
-# TODO: Read in more abaco config vars (stateless etc)
+# if [ -z "${REACTOR_DESCRIPTION}" ]
+# then
+#   warn "REACTOR_DESCRIPTION is empty, so we're cooking up a tasty description for you."
+#   REACTOR_DESCRIPTION=$(curl -skL 'https://baconipsum.com/api/?type=all-meat&sentences=1' | jq -r .[0])
+#   echo "${REACTOR_DESCRIPTION}"
+#   export REACTOR_DESCRIPTION
+# fi
 
 # Docker stuff
 DOCKER_BUILD_TARGET="${DOCKER_HUB_ORG}/${DOCKER_IMAGE_TAG}"
@@ -188,13 +170,15 @@ fi
 export DOCKER_BUILD_TARGET
 
 # Try Docker build
-#docker build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+docker build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
 
 # Try Docker push
-#docker push "${DOCKER_BUILD_TARGET}" . || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }
+docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }
 
-# Now, build abaco create CLI and call it - don't reinvent the wheel by re-writing 'abaco create'
-ABACO_CREATE_OPTS="-n ${REACTOR_NAME}"
+# Now, build abaco create CLI and call it
+# Don't reinvent the wheel by re-writing 'abaco create'
+ABACO_CREATE_OPTS="-n '${REACTOR_NAME}' -f"
+
 if [ "${REACTOR_STATELESS}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
@@ -208,7 +192,31 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
 fi
 
-echo "abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET}"
+# Environment
+if [ -z "${default_env}" ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -n ${default_env}"
+fi
+
+# Existing Actor
+if [ ! -z "${current_actor}" ]; then
+  die "Specifying an existing Actor ID to update is not yet supported" 
+fi
+
+if [ -f .ACTOR_ID ]
+then
+  mv .ACTOR_ID .ACTOR_ID.bak
+fi
+abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET} | jq -r .result.id > .ACTOR_ID
+
+ACTOR_ID=$(cat .ACTOR_ID)
+
+if [ ! -z "$ACTOR_ID" ]
+then
+  echo "Deployed Actor $ACTOR_ID"
+else
+  die "There was an error deploying this project"
+fi
 
 # TODO: Add/update the alias registry if provided
 # This uses REACTOR_ALIAS and the optional message.jsonschema
