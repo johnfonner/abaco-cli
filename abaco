@@ -17,6 +17,7 @@ Commands:
   executions                    view actor executions
   logs				view execution logs
   init                          create a new actor project
+  deploy                        build and deploy an actor
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -42,6 +43,12 @@ case "$1" in
 
   logs)                         shift;
         $DIR/abaco-logs.sh "$@";;
+
+  deploy)                         shift;
+        $DIR/abaco-deploy.sh "$@";;
+
+  init)                         shift;
+        $DIR/abaco-init.sh "$@";;
 
   *) 				shift;
 	echo "$HELP"; exit 0;;
