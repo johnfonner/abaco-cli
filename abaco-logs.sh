@@ -5,15 +5,14 @@ THIS=${THIS%.sh}
 THIS=${THIS//[-]/ }
 
 HELP="
-Usage: ${THIS} [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID] [EXECUTIONID]
 
-Prints logs for actor and exection IDs provided, respectively. Both 
-inputs are required.
+Prints logs for actor and exection IDs provided, respectively. If the
+execution ID is not provider, the most recent will be returned. 
 
 Options:
   -h 	show help message
   -z    api access token
-  -e	execution ID
   -v	verbose output
   -V    very verbose output
 "
@@ -55,13 +54,18 @@ fi
 
 actor="$1"
 if [ -z "$actor" ]; then
-    echo "Please specify actor"
+    echo "Please specify actor ID"
     usage
 fi
 
+execution="$2"
 if [ -z "$execution" ]; then
-    echo "Please specify execution"
-    usage
+    # Try to grab the most recent execution ID
+    execution=$(curl -sk -H "Authorization: Bearer $TOKEN" "$BASE_URL/actors/v2/$actor/executions" | jq -r .result.ids[0])
+    if [ "${execution}" == "null" ] || [ -z "${execution}" ]
+    then
+        die "Unable to automatically retrieve most recent execution ID"
+    fi
 fi
 
 curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution/logs'"
