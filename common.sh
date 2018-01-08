@@ -38,3 +38,9 @@ function warn() {
     echo "[WARNING] $1"
 
 }
+
+function info() {
+
+    echo "[INFO] $1"
+
+}
