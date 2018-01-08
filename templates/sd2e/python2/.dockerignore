@@ -1,3 +1,6 @@
+secrets.json
+.agave
+.agpy
 *.md
 env/*
 *.pyc

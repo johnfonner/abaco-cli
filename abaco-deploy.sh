@@ -79,11 +79,11 @@ do
 done
 
 # Look for optional files
-for optfile in config.yml message.json
+for optfile in config.yml message.json secrets.rc
 do
   if [ ! -f "$optfile" ];
   then
-    warn "Optional file $optfile not present"
+    info "Optional file $optfile not present"
   fi
 done
 
@@ -175,6 +175,9 @@ docker build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error bu
 # Try Docker push
 docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }
 
+info "Pausing to let Docker Hub register that the repo has been pushed"
+sleep 5
+
 # Now, build abaco create CLI and call it
 # Don't reinvent the wheel by re-writing 'abaco create'
 ABACO_CREATE_OPTS="-n '${REACTOR_NAME}' -f"
@@ -190,6 +193,13 @@ fi
 if [ "${REACTOR_USE_UID}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
+fi
+
+# Secrets (Read from a file never committed to Git or Docker image)
+if [ -f "secrets.json" ]
+then
+  info "Reading environment variables from local secrets file"
+  default_env=$(cat secrets.json)
 fi
 
 # Environment

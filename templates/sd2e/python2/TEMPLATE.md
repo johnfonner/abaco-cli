@@ -60,3 +60,11 @@ doing that.
 We've preconfigured .dockerignore and .gitignore files for you that are
 tailored towards preventing you from including sensitive information and/or
 build cruft in the Docker images and git repositories used in creating Reactors.
+
+## Secrets file
+
+If you create a file called `secrets.json` it will never be committed to a Git 
+repository or included in a Docker image build, but `abaco deploy` use it to
+populate the default environment variables for the Reactor. vValues placed in this 
+file are *NOT THAT SECRET* since they can be discovered by other users if you 
+choose to share your Reactor.

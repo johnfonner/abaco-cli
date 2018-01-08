@@ -61,7 +61,7 @@ fi
 execution="$2"
 if [ -z "$execution" ]; then
     # Try to grab the most recent execution ID
-    execution=$(curl -sk -H "Authorization: Bearer $TOKEN" "$BASE_URL/actors/v2/$actor/executions" | jq -r .result.ids[0])
+    execution=$(curl -sk -H "Authorization: Bearer $TOKEN" "$BASE_URL/actors/v2/$actor/executions" | jq -r .result.ids[-1])
     if [ "${execution}" == "null" ] || [ -z "${execution}" ]
     then
         die "Unable to automatically retrieve most recent execution ID"
