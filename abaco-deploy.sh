@@ -213,7 +213,7 @@ ACTOR_ID=$(cat .ACTOR_ID)
 
 if [ ! -z "$ACTOR_ID" ]
 then
-  echo "Deployed Actor $ACTOR_ID"
+  echo "Deployed Actor ID: $ACTOR_ID"
 else
   die "There was an error deploying this project"
 fi

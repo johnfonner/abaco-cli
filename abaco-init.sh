@@ -92,16 +92,20 @@ else
 fi
 
 # Copy in template
-echo "$DIR/templates/$tenant/$lang"
 if [ -d "$DIR/templates/$tenant/$lang" ]
 then
-  cp -R ${DIR}/templates/${tenant}/${lang}/ ${name}/
+  if [ ! -f "$DIR/templates/$tenant/$lang/placeholder" ]
+  then
+    cp -R ${DIR}/templates/${tenant}/${lang}/ ${name}/
+  else
+    die "Template support for $lang is not yet implemented."
+  fi
 else
   rm -rf ${name}
   die "Error creating project directory $name"
 fi
 
-# Template in the reactor.rc file
+# Template out the reactor.rc file
 cat << EOF > "${name}/reactor.rc"
 # Reactor mandatory settings
 REACTOR_NAME=${name}
