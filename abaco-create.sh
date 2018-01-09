@@ -14,7 +14,7 @@ Options:
   -h	show help message
   -z    api access token
   -n    name of actor
-  -e    default environment variables (JSON)
+  -e    default environment variable (key=value)
   -p    make privileged actor
   -f    force actor update
   -s    make stateless actor
@@ -34,8 +34,9 @@ privileged="false"
 stateless="false"
 force="false"
 use_uid="false"
-default_env={}
+#default_env={}
 tok=
+declare -a env_args
 
 while getopts ":hn:e:pfsuvz:V" o; do
     case "${o}" in
@@ -46,7 +47,7 @@ while getopts ":hn:e:pfsuvz:V" o; do
             name=${OPTARG}
             ;;
         e) # default environment (JSON)
-            default_env=${OPTARG}
+            env_args[${#env_args[@]}]=${OPTARG}
             ;;
         p) # privileged
             privileged="true"
@@ -90,15 +91,11 @@ if [ -z "$name" ]; then
     usage
 fi
 
-# check default env
-if ! [ -z "$default_env" ]; then
-    if ! $(is_json "$default_env"); then
-        echo "Default environment variables not formatted as JSON"
-        exit 0
-    fi
-fi
+# set up default env
+default_env=$(build_json_from_array "${env_args[@]}")
 
-curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env} }' '$BASE_URL/actors/v2'"
+data="{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env}}"
+curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '$data' '$BASE_URL/actors/v2'"
 
 function filter() {
 #    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
