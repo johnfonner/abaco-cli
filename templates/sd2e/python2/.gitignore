@@ -2,6 +2,7 @@
 .agave
 .agpy
 secrets.json
+.ACTOR_ID*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

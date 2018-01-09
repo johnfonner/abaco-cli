@@ -79,7 +79,7 @@ do
 done
 
 # Look for optional files
-for optfile in config.yml message.json secrets.rc
+for optfile in config.yml message.json secrets.json
 do
   if [ ! -f "$optfile" ];
   then
@@ -170,7 +170,7 @@ fi
 export DOCKER_BUILD_TARGET
 
 # Try Docker build
-docker build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+docker -l warn build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
 
 # Try Docker push
 docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }
@@ -180,7 +180,7 @@ sleep 5
 
 # Now, build abaco create CLI and call it
 # Don't reinvent the wheel by re-writing 'abaco create'
-ABACO_CREATE_OPTS="-n '${REACTOR_NAME}' -f"
+ABACO_CREATE_OPTS="-f -n ${REACTOR_NAME}"
 
 if [ "${REACTOR_STATELESS}" == 1 ]
 then
@@ -198,14 +198,14 @@ fi
 # Secrets (Read from a file never committed to Git or Docker image)
 if [ -f "secrets.json" ]
 then
-  info "Reading environment variables from local secrets file"
+  info "Reading environment variables from secrets.json"
   default_env=$(cat secrets.json)
 fi
 
 # Environment
-if [ -z "${default_env}" ]
+if [ ! -z "${default_env}" ]
 then
-  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -n ${default_env}"
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -e ${default_env}"
 fi
 
 # Existing Actor
@@ -223,7 +223,7 @@ ACTOR_ID=$(cat .ACTOR_ID)
 
 if [ ! -z "$ACTOR_ID" ]
 then
-  echo "Deployed Actor ID: $ACTOR_ID"
+  echo "Successfully deployed Actor with ID: $ACTOR_ID"
 else
   die "There was an error deploying this project"
 fi
