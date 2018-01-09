@@ -12,6 +12,7 @@ Commands:
   list, ls, actors, images	list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
+  permissions, share            list and update actor permissions
   workers, worker               view and add workers
   submit, run                   run actor
   executions                    view actor executions
@@ -31,6 +32,9 @@ case "$1" in
 
   delete|remove|rm)    		shift;
 	$DIR/abaco-delete.sh "$@";;		
+
+  permissions|share)            shift;
+        $DIR/abaco-permissions.sh "$@";;
 
   workers|worker)		shift;
 	$DIR/abaco-workers.sh "$@";;
