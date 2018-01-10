@@ -78,8 +78,19 @@ do
   fi
 done
 
+# Look for config.yml and regenerate if not there
+if [ ! -f "config.yml" ]
+then
+info "File config.yml was not found. Creating an empty one."
+# Template out the reactor.rc file
+cat << EOF > config.yml
+# Reactors config file
+---
+EOF
+fi
+
 # Look for optional files
-for optfile in config.yml message.json secrets.json
+for optfile in message.json secrets.json
 do
   if [ ! -f "$optfile" ];
   then
