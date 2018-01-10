@@ -14,7 +14,8 @@ Options:
   -h	show help message
   -z    api access token
   -n    name of actor
-  -e    default environment variable (key=value)
+  -e    environment variables (key=value)
+  -E    read environment variables from json file 
   -p    make privileged actor
   -f    force actor update
   -s    make stateless actor
@@ -34,11 +35,11 @@ privileged="false"
 stateless="false"
 force="false"
 use_uid="false"
-#default_env={}
 tok=
+env_json=
 declare -a env_args
 
-while getopts ":hn:e:pfsuvz:V" o; do
+while getopts ":hn:e:E:pfsuvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
@@ -46,8 +47,11 @@ while getopts ":hn:e:pfsuvz:V" o; do
         n) # name
             name=${OPTARG}
             ;;
-        e) # default environment (JSON)
+        e) # default environment (command line key=value)
             env_args[${#env_args[@]}]=${OPTARG}
+            ;;
+        E) # default environment (json file)
+            env_json=${OPTARG}
             ;;
         p) # privileged
             privileged="true"
@@ -91,9 +95,18 @@ if [ -z "$name" ]; then
     usage
 fi
 
-# set up default env
-default_env=$(build_json_from_array "${env_args[@]}")
+# default env
+# check env vars json file (exists, have contents, be json)
+if [ ! -f "$env_json" ] || [ ! -s "$env_json" ] || ! $(is_json $(cat $env_json)); then
+    die "$env_json is not valid. Please ensure it exists and contains valid JSON."
+fi
+file_default_env=$(cat $env_json)
+# build command line env vars into json
+args_default_env=$(build_json_from_array "${env_args[@]}")
+#combine both 
+default_env=$(echo "$file_default_env $args_default_env" | jq -s add)
 
+# curl command
 data="{\"image\":\"${image}\", \"name\":\"${name}\", \"privileged\":${privileged}, \"stateless\":${stateless}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env}}"
 curlCommand="curl -X POST -sk -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" --data '$data' '$BASE_URL/actors/v2'"
 

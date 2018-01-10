@@ -199,13 +199,13 @@ fi
 if [ -f "secrets.json" ]
 then
   info "Reading environment variables from secrets.json"
-  default_env=$(cat secrets.json)
+  default_env="secrets.json"
 fi
 
 # Environment
 if [ ! -z "${default_env}" ]
 then
-  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -e ${default_env}"
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
 
 # Existing Actor
