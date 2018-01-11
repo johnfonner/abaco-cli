@@ -16,8 +16,7 @@ Options:
   -z    api access token
   -F    Docker file (Dockerfile)
   -B    build config file (reactor.rc)
-  -e    default environment variables (JSON)
-  -R    dry run - build image and stop
+  -R    dry run - only build image
 "
 
 function usage() { echo "$HELP"; exit 0; }
@@ -45,10 +44,7 @@ while getopts ":hn:e:pfsuz:F:B:E:R" o; do
             ;;
         B) # reactor build config
             config_rc=${OPTARG}
-            ;;
-        E) # actor entrypoint file
-            entrypoint=${OPTARG}
-            ;;            
+            ;;          
         z) # API token
             tok=${OPTARG}
             ;;
@@ -225,7 +221,7 @@ then
 fi
 
 # Environment
-if [ ! -z "${default_env}" ]
+if [ ! -z "${default_env}" ] && [ "${default_env}" != "{}" ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
@@ -247,7 +243,7 @@ if [ ! -z "$ACTOR_ID" ]
 then
   echo "Successfully deployed Actor with ID: $ACTOR_ID"
 else
-  die "There was an error deploying this project"
+  die "There was an error deploying $REACTOR_NAME"
 fi
 
 # TODO: Add/update the alias registry if provided

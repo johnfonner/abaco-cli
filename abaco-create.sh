@@ -14,7 +14,7 @@ Options:
   -h	show help message
   -z    api access token
   -n    name of actor
-  -e    environment variables (key=value)
+  -e    set environment variables (key=value)
   -E    read environment variables from json file 
   -p    make privileged actor
   -f    force actor update
@@ -97,10 +97,14 @@ fi
 
 # default env
 # check env vars json file (exists, have contents, be json)
-if [ ! -f "$env_json" ] || [ ! -s "$env_json" ] || ! $(is_json $(cat $env_json)); then
-    die "$env_json is not valid. Please ensure it exists and contains valid JSON."
+file_default_env=
+if [ ! -z "$env_json" ]
+    then
+    if [ ! -f "$env_json" ] || [ ! -s "$env_json" ] || ! $(is_json $(cat $env_json)); then
+        die "$env_json is not valid. Please ensure it exists and contains valid JSON."
+    fi
+    file_default_env=$(cat $env_json)
 fi
-file_default_env=$(cat $env_json)
 # build command line env vars into json
 args_default_env=$(build_json_from_array "${env_args[@]}")
 #combine both 
