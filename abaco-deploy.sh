@@ -17,6 +17,7 @@ Options:
   -F    Docker file (Dockerfile)
   -B    build config file (reactor.rc)
   -e    default environment variables (JSON)
+  -R    dry run - build image and stop
 "
 
 function usage() { echo "$HELP"; exit 0; }
@@ -35,8 +36,9 @@ force="false"
 use_uid="false"
 default_env={}
 tok=
+dry_run=
 
-while getopts ":hn:e:pfsuz:F:B:E:" o; do
+while getopts ":hn:e:pfsuz:F:B:E:R" o; do
     case "${o}" in
         F) # Dockerfile
             dockerfile=${OPTARG}
@@ -52,6 +54,9 @@ while getopts ":hn:e:pfsuz:F:B:E:" o; do
             ;;
         e) # default environment (JSON)
             default_env=${OPTARG}
+            ;;
+        R) # dry run
+            dry_run=1
             ;;
         h | *) # print help text
             usage
@@ -78,8 +83,19 @@ do
   fi
 done
 
+# Look for config.yml and regenerate if not there
+if [ ! -f "config.yml" ]
+then
+info "File config.yml was not found. Creating an empty one."
+# Template out the reactor.rc file
+cat << EOF > config.yml
+# Reactors config file
+---
+EOF
+fi
+
 # Look for optional files
-for optfile in config.yml message.json secrets.json
+for optfile in message.json secrets.json
 do
   if [ ! -f "$optfile" ];
   then
@@ -171,6 +187,12 @@ export DOCKER_BUILD_TARGET
 
 # Try Docker build
 docker -l warn build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+
+if [ "$dry_run" == 1 ]
+then
+  info "Stopping deployment as this was only a dry run!"
+  exit 0
+fi
 
 # Try Docker push
 docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARGET} image to Docker registry"; }

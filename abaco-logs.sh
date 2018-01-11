@@ -7,8 +7,7 @@ THIS=${THIS//[-]/ }
 HELP="
 Usage: ${THIS} [OPTION]... [ACTORID] [EXECUTIONID]
 
-Prints logs for actor and exection IDs provided, respectively. If the
-execution ID is not provider, the most recent will be returned. 
+Prints logs for actor and exection IDs provided, respectively. 
 
 Options:
   -h 	show help message
@@ -60,12 +59,14 @@ fi
 
 execution="$2"
 if [ -z "$execution" ]; then
+    echo "Please also specify an execution ID"
+    usage
     # Try to grab the most recent execution ID
-    execution=$(curl -sk -H "Authorization: Bearer $TOKEN" "$BASE_URL/actors/v2/$actor/executions" | jq -r .result.ids[-1])
-    if [ "${execution}" == "null" ] || [ -z "${execution}" ]
-    then
-        die "Unable to automatically retrieve most recent execution ID"
-    fi
+    # execution=$(curl -sk -H "Authorization: Bearer $TOKEN" "$BASE_URL/actors/v2/$actor/executions" | jq -r .result.ids[0])
+    # if [ "${execution}" == "null" ] || [ -z "${execution}" ]
+    # then
+    #     die "Unable to automatically retrieve most recent execution ID"
+    # fi
 fi
 
 curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution/logs'"
