@@ -28,12 +28,7 @@ source "$DIR/common.sh"
 dockerfile="Dockerfile"
 config_rc="reactor.rc"
 entrypoint="reactor.py"
-
-privileged="false"
-stateless="false"
-force="false"
-use_uid="false"
-default_env={}
+default_env="secrets.json"
 tok=
 dry_run=
 
@@ -47,9 +42,6 @@ while getopts ":hn:e:pfsuz:F:B:E:R" o; do
             ;;          
         z) # API token
             tok=${OPTARG}
-            ;;
-        e) # default environment (JSON)
-            default_env=${OPTARG}
             ;;
         R) # dry run
             dry_run=1
@@ -213,16 +205,11 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
 fi
 
-# Secrets (Read from a file never committed to Git or Docker image)
-if [ -f "secrets.json" ]
+# Read default environment variables from secrets.json
+# This file never committed to Git or Docker image
+if [ -f "${default_env}" ]
 then
-  info "Reading environment variables from secrets.json"
-  default_env="secrets.json"
-fi
-
-# Environment
-if [ ! -z "${default_env}" ] && [ "${default_env}" != "{}" ]
-then
+  info "Reading environment variables from ${default_env}"
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
 
