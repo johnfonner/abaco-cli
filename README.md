@@ -48,7 +48,7 @@ Commands:
 
 ## Tutorial
 
-Here, we'll outline nine commands in the Abaco workflow, skipping `abaco init` and `abaco deploy` for now. We use a [sample Docker container](https://hub.docker.com/r/jturcino/abaco-trial/) called `jturcino/abaco-trial:latest`. When run, it prints the actor's environmental and context variables generated via [agavepy](https://github.com/TACC/agavepy), as well as printing the message passed by the user and the files present at the root of the container's filesystem.
+Here, we'll outline nine commands in the Abaco workflow, skipping `abaco init` and `abaco deploy` for now. We use a [sample Docker container](https://hub.docker.com/r/jturcino/abaco-trial/) called `jturcino/abaco-trial`. When run, it prints the actor's environmental and context variables generated via [agavepy](https://github.com/TACC/agavepy), as well as printing the message passed by the user and the files present at the root of the container's filesystem.
 
 1. **Create the actor** with `abaco create` using a Docker container. The command outputs the actor's name and ID. To customize our actor's environment, we will also pass two default environment variables using the `-e` flag.
 ```
@@ -145,7 +145,9 @@ FULL ENVIRONMENT:
 }
 
 ROOT FILES:
-bin boot dev etc home lib lib64 media mnt opt proc root run sbin srv sys tmp usr var agavepy script.py requirements.txt .dockerenv work corral corral-repl
+bin boot dev etc home lib lib64 media mnt opt proc root run sbin srv 
+sys tmp usr var agavepy script.py requirements.txt .dockerenv work 
+corral corral-repl
 ```
 
 7. **Share the actor** with `abaco logs` to allow another member of your team access to your actor now that we know the actor is up and running properly. There are four permission levels: `NONE`, `READ`, `EXECUTE`, and `UPDATE`.
