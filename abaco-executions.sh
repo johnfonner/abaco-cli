@@ -5,15 +5,14 @@ THIS=${THIS%.sh}
 THIS=${THIS//[-]/ }
 
 HELP="
-Usage: ${THIS}[OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID] [EXECUTIONID]
 
-Returns list of execution IDs for the provided actor or JSON description 
-of execution if execution ID provided with -e flag.
+Returns list of execution IDs for the provided actor or description 
+of execution if execution ID provided.
 
 Options:
   -h	show help message
   -z    api access token
-  -e	execution ID
   -v	verbose output
   -V    very verbose output
 "
@@ -26,13 +25,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 tok=
 
-while getopts ":hve:z:V" o; do
+while getopts ":hvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
-            ;;
-        e) # execution
-            execution=${OPTARG}
             ;;
         v) # verbose
             verbose="true"
@@ -46,6 +42,8 @@ while getopts ":hve:z:V" o; do
     esac
 done
 shift $((OPTIND-1))
+actor="$1"
+execution="$2"
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
 if [[ "$very_verbose" == "true" ]];
@@ -53,7 +51,6 @@ then
     verbose="true"
 fi
 
-actor="$1"
 if [ -z "$actor" ]; then
     echo "Please specify actor"
     usage
@@ -63,7 +60,6 @@ if [ -z "$execution" ]; then
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions'"
 else
     curlCommand="curl -sk -H \"Authorization: Bearer $TOKEN\" '$BASE_URL/actors/v2/$actor/executions/$execution'"
-#    verbose="true"
 fi
 
 function filter_list() {
