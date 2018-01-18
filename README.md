@@ -104,7 +104,7 @@ FULL CONTEXT:
   "_abaco_api_server": "https://api.sd2e.org", 
   "_abaco_Content_Type": "application/json", 
   "execution_id": "WxeyJbqxQbK6W", 
-  "_abaco_access_token": "c3c8e894ea9b632fff6ae334aea2f9d", 
+  "_abaco_access_token": "XXXXXXXXXXXXXXXXXXXXXXXXXX", 
   "message_dict": {
     "key2": "value2", 
     "key1": "value1"
@@ -136,7 +136,7 @@ FULL ENVIRONMENT:
   "_abaco_username": "jturcino", 
   "HOSTNAME": "d10bb601307c", 
   "_abaco_actor_id": "JmlG71b4rxOrv", 
-  "_abaco_access_token": "c3c8e894ea9b632fff6ae334aea2f9d", 
+  "_abaco_access_token": "XXXXXXXXXXXXXXXXXXXXXXXXXX", 
   "MSG": "{'key2': 'value2', 'key1': 'value1'}", 
   "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", 
   "_abaco_api_server": "https://api.sd2e.org", 
