@@ -5,14 +5,17 @@ THIS=${THIS%.sh}
 THIS=${THIS//[-]/ }
 
 HELP="
-Usage: ${THIS} [OPTION]... [ACTOR ID] [IMAGE]
+Usage: ${THIS} [OPTION]... [ACTORID]
 
-Updates an actor to a different Docker image. Default 
-environment variables, privileged status, state status, 
-uid use, and actor name cannot be changed.
+Updates an actor. Default environment variables, state 
+status, uid use, and actor name cannot be changed.
 
 Options:
   -h	show help message
+  -i    change Docker image
+  -p    remove privileged status
+  -P    add privileged status
+  -f    force update
   -z    api access token
   -v    verbose output
   -V    very verbose output
@@ -25,12 +28,27 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/common.sh"
 
-container=
 tok=
-while getopts ":hn:e:E:pfsuvz:V" o; do
+image=
+force=false
+unpriv_flag=false
+priv_flag=false
+while getopts ":hi:pPfvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
+            ;;
+        i) # change Docker image
+            image=${OPTARG}
+            ;;
+        p) # remove privileged status
+            unpriv_flag=true
+            ;;
+        P) # add privileged status
+            priv_flag=true
+            ;;
+        f) # force
+            force=true
             ;;
         v) # verbose
             verbose="true"
@@ -45,30 +63,56 @@ while getopts ":hn:e:E:pfsuvz:V" o; do
 done
 shift $((OPTIND-1))
 actorid="$1"
-repo="$2"
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
-if [[ "$very_verbose" == "true" ]];
+if [[ "$very_verbose" == "true" ]]
 then
     verbose="true"
 fi
 
-# check actor id and container
-if [ -z "$actorid" ]; then
+# fail if no actorid
+if [ -z "$actorid" ] 
+then
     echo "Please specify an actor ID"
     usage
 fi
-if [ -z "$repo" ]; then
-    echo "Please specify a Docker image"
+
+# set up privileged status
+# fail if conflicting flags
+privileged=
+if $priv_flag && $unpriv_flag
+then
+    echo "Conflicting info about $actorid privileged status"
     usage
+elif $priv_flag
+then
+    privileged=true
+elif $unpriv_flag
+then
+    privileged=false
+fi
+
+# building data (image, privileged, force)
+# only include image, privileged if specified
+function add_json () {
+    echo "$@" | jq -s add
+}
+data="{\"force\":${force}}"
+if ! [ -z "$image" ]
+then
+    data=$(add_json "${data} {\"image\":\"${image}\"}")
+fi
+if ! [ -z "$privileged" ]
+then
+    data=$(add_json "${data} {\"privileged\":${privileged}}")
 fi
 
 # curl command
-curlCommand="curl -X PUT -sk -H \"Authorization: Bearer $TOKEN\" -d image='${repo}' '$BASE_URL/actors/v2/${actorid}'"
+curlCommand="curl -X PUT -sk -H \"Authorization: Bearer $TOKEN\"  -H \"Content-Type: application/json\" --data '$data' '$BASE_URL/actors/v2/${actorid}'"
 
 function filter() {
-#    eval $@ | jq -r '.result | [.name, .id, .image] | @tsv' | column -t
-    eval $@ | jq -r '.result | [.name, .id, .image] |  "\(.[0]) \(.[1]) \(.[2])"' | column -t
+#    eval $@ | jq -r '.result | [.name, .id] | @tsv' | column -t
+    eval $@ | jq -r '.result | [.name, .id] |  "\(.[0]) \(.[1])"' | column -t
 }
 
 if [[ "$very_verbose" == "true" ]];
