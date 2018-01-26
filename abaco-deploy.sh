@@ -129,14 +129,14 @@ set +a
 
 # Validate that the ones that are not supposed to be empty... aren't empty
 # Automatically assign values where we can
-if [ -z "${DOCKER_HUB_ORG}" ]
+if [ -z "${DOCKER_HUB_ORG}" ] || [ "${DOCKER_HUB_ORG}" == "your_docker_registory_uname" ]
 then
   if [ ! -z "${ENV_DOCKER_HUB_ORG}" ]
   then
     DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
     export DOCKER_HUB_ORG
   else
-    die "DOCKER_HUB_ORG must be your username or organization. Set in ENV or in $config_rc"
+    die "DOCKER_HUB_ORG must be your DockerHub username or organization. Set in ENV or in $config_rc"
   fi
 fi
 
