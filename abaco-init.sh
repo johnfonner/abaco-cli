@@ -19,7 +19,7 @@ function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source "$DIR/common.sh"
+source "$DIR/abaco-common.sh"
 
 function slugify {
   echo "${1}" | tr -c -d [A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'

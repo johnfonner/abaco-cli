@@ -24,7 +24,7 @@ function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source "$DIR/common.sh"
+source "$DIR/abaco-common.sh"
 tok=
 
 while getopts ":hvw:n:z:V" o; do
