@@ -12,6 +12,7 @@ Commands:
   list, ls, actors, images	list actors
   create, make, register        create new actor
   delete, remove, rm            remove actor
+  update, change                update base Docker image
   permissions, share            list and update actor permissions
   workers, worker               view and add workers
   submit, run                   run actor
@@ -32,6 +33,9 @@ case "$1" in
 
   delete|remove|rm)    		shift;
 	$DIR/abaco-delete.sh "$@";;		
+
+  update|change)                shift;
+        $DIR/abaco-update.sh "$@";;
 
   permissions|share)            shift;
         $DIR/abaco-permissions.sh "$@";;

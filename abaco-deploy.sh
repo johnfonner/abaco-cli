@@ -23,17 +23,12 @@ function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source "$DIR/common.sh"
+source "$DIR/abaco-common.sh"
 
 dockerfile="Dockerfile"
 config_rc="reactor.rc"
 entrypoint="reactor.py"
-
-privileged="false"
-stateless="false"
-force="false"
-use_uid="false"
-default_env={}
+default_env="secrets.json"
 tok=
 dry_run=
 
@@ -47,9 +42,6 @@ while getopts ":hn:e:pfsuz:F:B:E:R" o; do
             ;;          
         z) # API token
             tok=${OPTARG}
-            ;;
-        e) # default environment (JSON)
-            default_env=${OPTARG}
             ;;
         R) # dry run
             dry_run=1
@@ -102,7 +94,7 @@ done
 # Check existence and min version of Docker
 command -v docker >/dev/null 2>&1 || { die "Docker is not installed or accessible"; }
 DOCKER_VERSION="$(docker --version)"
-if [[ ! "$DOCKER_VERSION" =~ "Docker version 17" ]];
+if [[ ! "$DOCKER_VERSION" =~ "Docker version 17" ]] && [[ ! "$DOCKER_VERSION" =~ "Docker version 18" ]];
 then
   die "${DOCKER_VERSION} is not recent enough."
 fi
@@ -137,14 +129,14 @@ set +a
 
 # Validate that the ones that are not supposed to be empty... aren't empty
 # Automatically assign values where we can
-if [ -z "${DOCKER_HUB_ORG}" ]
+if [ -z "${DOCKER_HUB_ORG}" ] || [ "${DOCKER_HUB_ORG}" == "your_docker_registory_uname" ]
 then
   if [ ! -z "${ENV_DOCKER_HUB_ORG}" ]
   then
     DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
     export DOCKER_HUB_ORG
   else
-    die "DOCKER_HUB_ORG must be your username or organization. Set in ENV or in $config_rc"
+    die "DOCKER_HUB_ORG must be your DockerHub username or organization. Set in ENV or in $config_rc"
   fi
 fi
 
@@ -213,16 +205,11 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
 fi
 
-# Secrets (Read from a file never committed to Git or Docker image)
-if [ -f "secrets.json" ]
+# Read default environment variables from secrets.json
+# This file never committed to Git or Docker image
+if [ -f "${default_env}" ]
 then
-  info "Reading environment variables from secrets.json"
-  default_env="secrets.json"
-fi
-
-# Environment
-if [ ! -z "${default_env}" ] && [ "${default_env}" != "{}" ]
-then
+  info "Reading environment variables from ${default_env}"
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
 
