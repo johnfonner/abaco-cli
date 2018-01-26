@@ -19,7 +19,7 @@ function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source "$DIR/common.sh"
+source "$DIR/abaco-common.sh"
 
 function slugify {
   echo "${1}" | tr -c -d [A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
@@ -27,8 +27,8 @@ function slugify {
 
 name=
 repo=
-lang="python2"
-tenant="tacc.cloud"
+lang=
+tenant=
 
 while getopts ":hl:n:i:" o; do
     case "${o}" in
@@ -38,15 +38,13 @@ while getopts ":hl:n:i:" o; do
         l) # language
             lang=${OPTARG}
             ;;
-        i) # repo
-            repo=${OPTARG}
-            ;;
         h | *) # print help text
             usage
             ;;
     esac
 done
 shift $((OPTIND-1))
+repo="$1"
 
 if [ -z "${name}" ]
 then
@@ -69,18 +67,25 @@ else
   die "Project directory $name exists."
 fi
 
-# Template language
+# Template language - default Python2
 if [ -z "${lang}" ]
 then
   lang="python2"
   info "Defaulting to Python2"
 fi
 
-# TODO: More stringent check on Docker repo name
-#       especially if passed by user. 
+# set repo to name if not passed by user
+# else, check user-passed repo is valid (slugify)
 if [ -z "${repo}" ]
 then
   repo=${name}
+else
+  saferepo=$(slugify $repo)
+  if [ "$saferepo" != "$repo" ]
+  then
+    info "Making repo name URL safe: $saferepo"
+    repo="$saferepo"
+  fi
 fi
 
 # Get tenant ID
@@ -120,6 +125,6 @@ REACTOR_NAME=${name}
 
 # Docker settings
 DOCKER_HUB_ORG=your_docker_registory_uname
-DOCKER_IMAGE_TAG=${name}
+DOCKER_IMAGE_TAG=${repo}
 DOCKER_IMAGE_VERSION=0.1
 EOF
