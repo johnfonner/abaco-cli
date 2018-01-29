@@ -16,6 +16,7 @@ Options:
   -z    api access token
   -F    Docker file (Dockerfile)
   -B    build config file (reactor.rc)
+  -k    bypass Docker cache when building
   -R    dry run - only build image
 "
 
@@ -30,9 +31,10 @@ config_rc="reactor.rc"
 entrypoint="reactor.py"
 default_env="secrets.json"
 tok=
+no_cache=
 dry_run=
 
-while getopts ":hn:e:pfsuz:F:B:E:R" o; do
+while getopts ":hn:e:pfsuz:F:B:E:Rk" o; do
     case "${o}" in
         F) # Dockerfile
             dockerfile=${OPTARG}
@@ -42,6 +44,9 @@ while getopts ":hn:e:pfsuz:F:B:E:R" o; do
             ;;          
         z) # API token
             tok=${OPTARG}
+            ;;
+        k) # --no-cache
+            no_cache=" --no-cache"
             ;;
         R) # dry run
             dry_run=1
@@ -174,7 +179,7 @@ fi
 export DOCKER_BUILD_TARGET
 
 # Try Docker build
-docker -l warn build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+docker -l warn build ${no_cache} -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
 
 if [ "$dry_run" == 1 ]
 then
