@@ -1,17 +1,31 @@
 #!/bin/bash
 
-BASE_URL=$(awk -F, '{print $2}' ~/.agave/current | cut -d '"' -f 4)
-CLIENT_SECRET=$(awk -F, '{print $4}' ~/.agave/current | cut -d '"' -f 4)
-CLIENT_KEY=$(awk -F, '{print $5}' ~/.agave/current | cut -d '"' -f 4)
-
-USERNAME=$(awk -F, '{print $6}' ~/.agave/current | cut -d '"' -f 4)
-TOKEN=$(awk -F, '{print $7}' ~/.agave/current | cut -d '"' -f 4)
-
 if [[ ! -x $( which jq ) ]]; then
     echo "Error: jq was not found."
-    echo "This CLI requires jq.  Please install it first"
+    echo "This CLI requires jq. Please install it first."
+    echo " - https://stedolan.github.io/jq/download/"
     exit 1
 fi
+
+AGAVE_AUTH_CACHE=
+if [ ! -z "${AGAVE_CACHE_DIR}" ] && [ -d "${AGAVE_CACHE_DIR}" ]; then
+    if [ -f "${AGAVE_CACHE_DIR}/current" ]; then
+        AGAVE_AUTH_CACHE="${AGAVE_CACHE_DIR}/current"
+    fi
+else
+    AGAVE_AUTH_CACHE="$HOME/.agave/current"
+fi
+if [ ! -f "${AGAVE_AUTH_CACHE}" ]; then
+    echo "Error: API credentials are not configured."
+    exit 1
+fi
+
+BASE_URL=$(jq -r .baseurl ${AGAVE_AUTH_CACHE})
+CLIENT_SECRET=$(jq -r .apisecret  ${AGAVE_AUTH_CACHE})
+CLIENT_KEY=$(jq -r .apikey  ${AGAVE_AUTH_CACHE})
+USERNAME=$(jq -r .username  ${AGAVE_AUTH_CACHE})
+TOKEN=$(jq -r .access_token  ${AGAVE_AUTH_CACHE})
+TENANTID=$(jq -r .tenantid  ${AGAVE_AUTH_CACHE})
 
 function build_json_from_array() {
     local myarray=("$@")

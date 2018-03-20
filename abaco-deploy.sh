@@ -22,7 +22,6 @@ Options:
 function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 source "$DIR/abaco-common.sh"
 
 dockerfile="Dockerfile"
@@ -39,7 +38,7 @@ while getopts ":hn:e:pfsuz:F:B:E:R" o; do
             ;;
         B) # reactor build config
             config_rc=${OPTARG}
-            ;;          
+            ;;
         z) # API token
             tok=${OPTARG}
             ;;
@@ -215,7 +214,7 @@ fi
 
 # Existing Actor
 if [ ! -z "${current_actor}" ]; then
-  die "Specifying an existing Actor ID to update is not yet supported" 
+  die "Specifying an existing Actor ID to update is not yet supported"
 fi
 
 if [ -f .ACTOR_ID ]
