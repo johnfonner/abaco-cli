@@ -8,7 +8,8 @@ HELP="
 Usage: ${THIS} [OPTION]... [ACTORID] [IMAGE]
 
 Updates an actor. State status and actor name 
-cannot be changed.
+cannot be changed. Actor ID and Docker image
+required.
 
 Options:
   -h	show help message

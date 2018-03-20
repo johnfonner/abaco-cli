@@ -188,14 +188,9 @@ docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARG
 info "Pausing to let Docker Hub register that the repo has been pushed"
 sleep 5
 
-# Now, build abaco create CLI and call it
+# Now, build abaco create/update CLI and call it
 # Don't reinvent the wheel by re-writing 'abaco create'
-ABACO_CREATE_OPTS="-f -n ${REACTOR_NAME}"
-
-if [ "${REACTOR_STATELESS}" == 1 ]
-then
-  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
-fi
+ABACO_CREATE_OPTS="-f"
 if [ "${REACTOR_PRIVILEGED}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -p"
@@ -203,6 +198,16 @@ fi
 if [ "${REACTOR_USE_UID}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
+fi
+
+# If updating, do not include name or stateless 
+if [ -z "$current_actor" ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -n ${REACTOR_NAME}"
+  if [ "${REACTOR_STATELESS}" == 1 ]
+  then
+    ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
+  fi
 fi
 
 # Read default environment variables from secrets.json
@@ -213,16 +218,18 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
 
-# Existing Actor
-if [ ! -z "${current_actor}" ]; then
-  die "Specifying an existing Actor ID to update is not yet supported" 
-fi
-
 if [ -f .ACTOR_ID ]
 then
   mv .ACTOR_ID .ACTOR_ID.bak
 fi
-abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET} | jq -r .result.id > .ACTOR_ID
+
+if [ -z "$current_actor" ]
+then
+  cmd="abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET}"
+else
+  cmd="abaco update -v ${ABACO_CREATE_OPTS} ${current_actor} ${DOCKER_BUILD_TARGET}"
+fi
+eval $cmd | jq -r .result.id > .ACTOR_ID
 
 ACTOR_ID=$(cat .ACTOR_ID)
 
@@ -235,4 +242,3 @@ fi
 
 # TODO: Add/update the alias registry if provided
 # This uses REACTOR_ALIAS and the optional message.jsonschema
-
