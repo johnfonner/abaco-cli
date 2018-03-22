@@ -23,7 +23,6 @@ Options:
 function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 source "$DIR/abaco-common.sh"
 
 function get_actorid() { 
@@ -58,7 +57,6 @@ while getopts ":hz:F:B:RU" o; do
             ;;
         B) # reactor build config
             config_rc=${OPTARG}
-            ;;          
         R) # dry run
             dry_run=1
             ;;
