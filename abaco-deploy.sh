@@ -251,8 +251,6 @@ then
 else
   cmd="abaco update -v ${ABACO_CREATE_OPTS} ${current_actor} ${DOCKER_BUILD_TARGET}"
 fi
-echo "$cmd" # deleteme
-exit 0 # deleteme
 eval $cmd | jq -r .result.id > .ACTOR_ID
 
 ACTOR_ID=$(cat .ACTOR_ID)
