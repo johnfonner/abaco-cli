@@ -5,7 +5,7 @@ THIS=${THIS%.sh}
 THIS=${THIS//[-]/ }
 
 HELP="
-Usage: ${THIS} [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]...
 
 Build and deploy an Abaco actor from a local project directory.
 Requires Docker version 17.03.0-ce or higher, push access to a
@@ -18,13 +18,28 @@ Options:
   -B    build config file (reactor.rc)
   -k    bypass Docker cache when building
   -R    dry run - only build image
+  -U    update preexisting actor (provided or from .ACTOR_ID)
 "
 
 function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 source "$DIR/abaco-common.sh"
+
+function get_actorid() {
+  local actorid="$1"
+  # If not a valid actor ID, try to get from .ACTOR_ID
+  if [[ $actorid == -* ]] || [ -z "$actorid" ]
+  then
+    if [ -s ".ACTOR_ID" ]
+    then
+      actorid=$(cat .ACTOR_ID)
+    else
+      actorid=
+    fi
+  fi
+  echo "$actorid"
+}
 
 dockerfile="Dockerfile"
 config_rc="reactor.rc"
@@ -34,14 +49,18 @@ tok=
 no_cache=
 dry_run=
 
-while getopts ":hn:e:pfsuz:F:B:E:Rk" o; do
+current_actor=
+while getopts ":hz:F:B:RUk" o; do
     case "${o}" in
+        z) # API token
+            tok=${OPTARG}
+            ;;
         F) # Dockerfile
             dockerfile=${OPTARG}
             ;;
         B) # reactor build config
             config_rc=${OPTARG}
-            ;;          
+            ;;
         z) # API token
             tok=${OPTARG}
             ;;
@@ -51,6 +70,15 @@ while getopts ":hn:e:pfsuz:F:B:E:Rk" o; do
         R) # dry run
             dry_run=1
             ;;
+        U) # update
+            current_actor=$(get_actorid "${@:$OPTIND:1}")
+            if [ -z "$current_actor" ]
+            then
+              warn "Actor ID not found. Creating new actor."
+            else
+              info "Updating actor $current_actor"
+            fi
+            ;;
         h | *) # print help text
             usage
             ;;
@@ -59,18 +87,15 @@ done
 shift $((OPTIND-1))
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
-if [[ "$very_verbose" == "true" ]];
+if [[ "$very_verbose" == "true" ]]
 then
     verbose="true"
 fi
 
-# Check for existing Actor ID
-current_actor="$1"
-
 # Check for mandatory files
 for mandfile in $dockerfile $config_rc $entrypoint
 do
-  if [ ! -f "$mandfile" ];
+  if [ ! -f "$mandfile" ]
   then
     die "Cannot proceed without file $mandfile"
   fi
@@ -88,9 +113,9 @@ EOF
 fi
 
 # Look for optional files
-for optfile in message.json secrets.json
+for optfile in secrets.json
 do
-  if [ ! -f "$optfile" ];
+  if [ ! -f "$optfile" ]
   then
     info "Optional file $optfile not present"
   fi
@@ -99,7 +124,7 @@ done
 # Check existence and min version of Docker
 command -v docker >/dev/null 2>&1 || { die "Docker is not installed or accessible"; }
 DOCKER_VERSION="$(docker --version)"
-if [[ ! "$DOCKER_VERSION" =~ "Docker version 17" ]] && [[ ! "$DOCKER_VERSION" =~ "Docker version 18" ]];
+if [[ ! "$DOCKER_VERSION" =~ "Docker version 17" ]] && [[ ! "$DOCKER_VERSION" =~ "Docker version 18" ]]
 then
   die "${DOCKER_VERSION} is not recent enough."
 fi
@@ -193,14 +218,9 @@ docker push "${DOCKER_BUILD_TARGET}" || { die "Error pushing ${DOCKER_BUILD_TARG
 info "Pausing to let Docker Hub register that the repo has been pushed"
 sleep 5
 
-# Now, build abaco create CLI and call it
+# Now, build abaco create/update CLI and call it
 # Don't reinvent the wheel by re-writing 'abaco create'
-ABACO_CREATE_OPTS="-f -n ${REACTOR_NAME}"
-
-if [ "${REACTOR_STATELESS}" == 1 ]
-then
-  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
-fi
+ABACO_CREATE_OPTS="-f"
 if [ "${REACTOR_PRIVILEGED}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -p"
@@ -208,6 +228,16 @@ fi
 if [ "${REACTOR_USE_UID}" == 1 ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
+fi
+
+# If updating, do not include name or stateless
+if [ -z "$current_actor" ]
+then
+  ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -n ${REACTOR_NAME}"
+  if [ "${REACTOR_STATELESS}" == 1 ]
+  then
+    ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -s"
+  fi
 fi
 
 # Read default environment variables from secrets.json
@@ -218,26 +248,27 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -E ${default_env}"
 fi
 
-# Existing Actor
-if [ ! -z "${current_actor}" ]; then
-  die "Specifying an existing Actor ID to update is not yet supported" 
-fi
-
 if [ -f .ACTOR_ID ]
 then
   mv .ACTOR_ID .ACTOR_ID.bak
 fi
-abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET} | jq -r .result.id > .ACTOR_ID
+
+if [ -z "$current_actor" ]
+then
+  cmd="abaco create -v ${ABACO_CREATE_OPTS} ${DOCKER_BUILD_TARGET}"
+else
+  cmd="abaco update -v ${ABACO_CREATE_OPTS} ${current_actor} ${DOCKER_BUILD_TARGET}"
+fi
+eval $cmd | jq -r .result.id > .ACTOR_ID
 
 ACTOR_ID=$(cat .ACTOR_ID)
 
 if [ ! -z "$ACTOR_ID" ]
 then
-  echo "Successfully deployed Actor with ID: $ACTOR_ID"
+  echo "Successfully deployed actor with ID: $ACTOR_ID"
 else
   die "There was an error deploying $REACTOR_NAME"
 fi
 
 # TODO: Add/update the alias registry if provided
 # This uses REACTOR_ALIAS and the optional message.jsonschema
-

@@ -18,7 +18,6 @@ Options:
 function usage() { echo "$HELP"; exit 0; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 source "$DIR/abaco-common.sh"
 
 function slugify {
@@ -91,7 +90,7 @@ fi
 # Get tenant ID
 if [ -f "$HOME/.agave/current" ]
 then
-  tenant=$(jq -r .tenantid $HOME/.agave/current)
+  tenant=${TENANTID}
 else
   die "Can't determine TACC Cloud tenant"
 fi
