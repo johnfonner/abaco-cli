@@ -5,18 +5,20 @@ THIS=${THIS%.sh}
 THIS=${THIS//[-]/ }
 
 HELP="
-Usage: ${THIS} [OPTION]... [ACTORID]
+Usage: ${THIS} [OPTION]... [ACTORID] [IMAGE]
 
-Updates an actor. Default environment variables, state 
-status, uid use, and actor name cannot be changed.
+Updates an actor. State status and actor name 
+cannot be changed. Actor ID and Docker image
+required.
 
 Options:
   -h	show help message
-  -i    change Docker image
-  -p    remove privileged status
-  -P    add privileged status
-  -f    force update
   -z    api access token
+  -e    set environment variables (key=value)
+  -E    read environment variables from json file 
+  -p    add privileged status
+  -f    force update
+  -u    use actor uid
   -v    verbose output
   -V    very verbose output
 "
@@ -29,26 +31,28 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/abaco-common.sh"
 
 tok=
-image=
 force=false
-unpriv_flag=false
-priv_flag=false
-while getopts ":hi:pPfvz:V" o; do
+use_uid=false
+privileged=false
+while getopts ":he:E:pfuvz:V" o; do
     case "${o}" in
         z) # custom token
             tok=${OPTARG}
             ;;
-        i) # change Docker image
-            image=${OPTARG}
+        e) # default environment (command line key=value)
+            env_args[${#env_args[@]}]=${OPTARG}
             ;;
-        p) # remove privileged status
-            unpriv_flag=true
+        E) # default environment (json file)
+            env_json=${OPTARG}
             ;;
-        P) # add privileged status
-            priv_flag=true
+        p) # privileged
+            privileged=true
             ;;
         f) # force
             force=true
+            ;;
+        u) # use uid
+            use_uid=true
             ;;
         v) # verbose
             verbose="true"
@@ -63,6 +67,7 @@ while getopts ":hi:pPfvz:V" o; do
 done
 shift $((OPTIND-1))
 actorid="$1"
+image="$2"
 
 if [ ! -z "$tok" ]; then TOKEN=$tok; fi
 if [[ "$very_verbose" == "true" ]]
@@ -70,44 +75,31 @@ then
     verbose="true"
 fi
 
-# fail if no actorid
-if [ -z "$actorid" ] 
+# fail if no actorid or image
+if [ -z "$actorid" ] || [ -z "$image" ]
 then
-    echo "Please specify an actor ID"
+    echo "Please specify an actor ID and a Docker image"
     usage
 fi
 
-# set up privileged status
-# fail if conflicting flags
-privileged=
-if $priv_flag && $unpriv_flag
+# default env
+# check env vars json file (exists, have contents, be json)
+file_default_env=
+if [ ! -z "$env_json" ]
 then
-    echo "Conflicting info about $actorid privileged status"
-    usage
-elif $priv_flag
-then
-    privileged=true
-elif $unpriv_flag
-then
-    privileged=false
+    if [ ! -f "$env_json" ] || [ ! -s "$env_json" ] || ! $(is_json $(cat $env_json))
+    then
+        die "$env_json is not valid. Please ensure it exists and contains valid JSON."
+    fi
+    file_default_env=$(cat $env_json)
 fi
-
-# building data (image, privileged, force)
-# only include image, privileged if specified
-function add_json () {
-    echo "$@" | jq -s add
-}
-data="{\"force\":${force}}"
-if ! [ -z "$image" ]
-then
-    data=$(add_json "${data} {\"image\":\"${image}\"}")
-fi
-if ! [ -z "$privileged" ]
-then
-    data=$(add_json "${data} {\"privileged\":${privileged}}")
-fi
+# build command line env vars into json
+args_default_env=$(build_json_from_array "${env_args[@]}")
+#combine both 
+default_env=$(echo "$file_default_env $args_default_env" | jq -s add)
 
 # curl command
+data="{\"image\":\"${image}\", \"privileged\":${privileged}, \"force\":${force}, \"useContainerUid\":${use_uid}, \"defaultEnvironment\":${default_env}}"
 curlCommand="curl -X PUT -sk -H \"Authorization: Bearer $TOKEN\"  -H \"Content-Type: application/json\" --data '$data' '$BASE_URL/actors/v2/${actorid}'"
 
 function filter() {
@@ -115,12 +107,13 @@ function filter() {
     eval $@ | jq -r '.result | [.name, .id] |  "\(.[0]) \(.[1])"' | column -t
 }
 
-if [[ "$very_verbose" == "true" ]];
+if [[ "$very_verbose" == "true" ]]
 then
     echo "Calling $curlCommand"
 fi
 
-if [[ "$verbose" == "true" ]]; then
+if [[ "$verbose" == "true" ]]
+then
     eval $curlCommand
 else
     filter $curlCommand
