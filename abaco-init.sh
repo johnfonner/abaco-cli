@@ -12,7 +12,7 @@ Initializes a new Abaco actor project.
 Options:
   -h    show help message
   -n    project name (e.g. my_new_actor)
-  -l    language (default: python2)
+  -l    language (default: python3)
 "
 
 function usage() { echo "$HELP"; exit 0; }
@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/abaco-common.sh"
 
 function slugify {
-  echo "${1}" | tr -c -d [A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+  echo "${1}" | tr -c -d [0-9A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
 }
 
 name=
@@ -69,8 +69,8 @@ fi
 # Template language - default Python2
 if [ -z "${lang}" ]
 then
-  lang="python2"
-  info "Defaulting to Python2"
+  lang="python3"
+  info "Defaulting to Python 3.6"
 fi
 
 # set repo to name if not passed by user
@@ -113,14 +113,8 @@ fi
 cat << EOF > "${name}/reactor.rc"
 # Reactor mandatory settings
 REACTOR_NAME=${name}
-
-# Reactor optional settings
 # REACTOR_DESCRIPTION=
-# REACTOR_WORKERS=1
-# REACTOR_PRIVILEGED=0
-# REACTOR_STATELESS=0
-# REACTOR_USE_UID=0
-# REACTOR_ALIAS=aka_reactor_demo
+# REACTOR_ALIAS=reactor-nickname
 
 # Docker settings
 DOCKER_HUB_ORG=your_docker_registory_uname

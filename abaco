@@ -5,7 +5,7 @@ THIS=$(basename $0)
 HELP="
 Usage: ${THIS} [COMMAND] [OPTION]...
 
-Set of commands for interacting with Abaco API. Options vary by 
+Set of commands for interacting with Abaco API. Options vary by
 command; use -h flag after command to view usage details.
 
 Commands:
@@ -32,7 +32,7 @@ case "$1" in
 	$DIR/abaco-create.sh "$@";;
 
   delete|remove|rm)    		shift;
-	$DIR/abaco-delete.sh "$@";;		
+	$DIR/abaco-delete.sh "$@";;
 
   update|change)                shift;
         $DIR/abaco-update.sh "$@";;

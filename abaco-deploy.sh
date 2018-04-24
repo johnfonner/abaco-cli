@@ -16,6 +16,11 @@ Options:
   -z    api access token
   -F    Docker file (Dockerfile)
   -B    build config file (reactor.rc)
+  -O    override DOCKER_HUB_ORG from config file and ENV
+  -c    override REACTOR_IMAGE_TAG from config file
+  -t    override REACTOR_IMAGE_VERSION in config file
+  -p    don't pull source image when building
+  -k    bypass Docker cache when building
   -R    dry run - only build image
   -U    update preexisting actor (provided or from .ACTOR_ID)
 "
@@ -25,7 +30,7 @@ function usage() { echo "$HELP"; exit 0; }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/abaco-common.sh"
 
-function get_actorid() { 
+function get_actorid() {
   local actorid="$1"
   # If not a valid actor ID, try to get from .ACTOR_ID
   if [[ $actorid == -* ]] || [ -z "$actorid" ]
@@ -44,10 +49,18 @@ dockerfile="Dockerfile"
 config_rc="reactor.rc"
 entrypoint="reactor.py"
 default_env="secrets.json"
+# allow inheritance from environment
+passed_docker_org="${DOCKER_HUB_ORG}"
+passed_image_name=
+passed_image_tag=
 tok=
+no_cache=
 dry_run=
+dopull=1
+nocache=0
+
 current_actor=
-while getopts ":hz:F:B:RU" o; do
+while getopts ":hz:F:B:RpkUkO:c:t:" o; do
     case "${o}" in
         z) # API token
             tok=${OPTARG}
@@ -57,8 +70,30 @@ while getopts ":hz:F:B:RU" o; do
             ;;
         B) # reactor build config
             config_rc=${OPTARG}
+            ;;
+        O) # docker hub username or org
+            passed_docker_org=${OPTARG}
+            ;;
+        c) # docker repo name
+            passed_image_name=${OPTARG}
+            ;;
+        t) # docker repo tag
+            passed_image_tag=${OPTARG}
+            ;;
+        z) # API token
+            tok=${OPTARG}
+            ;;
+        k) # --no-cache
+            no_cache=" --no-cache"
+            ;;
         R) # dry run
             dry_run=1
+            ;;
+        p) # no pull
+            dopull=0
+            ;;
+        k) # no pull
+            nocache=1
             ;;
         U) # update
             current_actor=$(get_actorid "${@:$OPTIND:1}")
@@ -102,8 +137,22 @@ cat << EOF > config.yml
 EOF
 fi
 
+# Look for message.jsonschema and generate a generic one
+if [ ! -f "message.jsonschema" ]
+then
+info "File message.jsonschema was not found. Creating one just validates JSON."
+# Template out the schema file
+cat << EOF > {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "AbacoMessage",
+    "description": "Generic Abaco JSON message",
+    "type": "object"
+}
+EOF
+fi
+
 # Look for optional files
-for optfile in message.json secrets.json
+for optfile in secrets.json
 do
   if [ ! -f "$optfile" ]
   then
@@ -156,13 +205,16 @@ then
     DOCKER_HUB_ORG="${ENV_DOCKER_HUB_ORG}"
     export DOCKER_HUB_ORG
   else
-    die "DOCKER_HUB_ORG must be your DockerHub username or organization. Set in ENV or in $config_rc"
+    die "DOCKER_HUB_ORG is your DockerHub username or organization. Set in ENV or $config_rc or pass via -O"
   fi
 fi
 
+if [ ! -z "${passed_image_name}" ]; then
+  DOCKER_IMAGE_TAG="${passed_image_name}"
+fi
 if [ -z "${DOCKER_IMAGE_TAG}" ]
 then
-  die "DOCKER_IMAGE_TAG cannot be empty in $config_rc"
+  die "DOCKER_IMAGE_TAG cannot be empty. Set it in $config_rc or pass via -c"
 fi
 
 # Reactor values
@@ -174,27 +226,31 @@ then
   echo "${REACTOR_NAME}"
 fi
 
-# if [ -z "${REACTOR_DESCRIPTION}" ]
-# then
-#   warn "REACTOR_DESCRIPTION is empty, so we're cooking up a tasty description for you."
-#   REACTOR_DESCRIPTION=$(curl -skL 'https://baconipsum.com/api/?type=all-meat&sentences=1' | jq -r .[0])
-#   echo "${REACTOR_DESCRIPTION}"
-#   export REACTOR_DESCRIPTION
-# fi
-
 # Docker stuff
 DOCKER_BUILD_TARGET="${DOCKER_HUB_ORG}/${DOCKER_IMAGE_TAG}"
+if [ ! -z "${passed_image_tag}" ]; then
+  DOCKER_IMAGE_VERSION=${passed_image_tag}
+fi
 if [ ! -z "${DOCKER_IMAGE_VERSION}" ]
 then
   DOCKER_BUILD_TARGET="${DOCKER_BUILD_TARGET}:${DOCKER_IMAGE_VERSION}"
 else
   warn "It is considered a best practice to specify a version for a Docker image"
-  warn "Do this by setting DOCKER_IMAGE_VERSION in $config_rc"
+  warn "Do this by setting DOCKER_IMAGE_VERSION in $config_rc or passing via -t"
 fi
 export DOCKER_BUILD_TARGET
 
 # Try Docker build
-docker -l warn build -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
+buildopts="--rm=true"
+if ((dopull)); then
+  buildopts="${buildopts} --pull"
+fi
+if ((nocache)); then
+  buildopts="${buildopts} --no-cache"
+fi
+info "  Build Options: ${buildopts}"
+
+docker -l warn build ${buildopts} -f "${dockerfile}" -t "${DOCKER_BUILD_TARGET}" . || { die "Error building ${DOCKER_BUILD_TARGET}"; }
 
 if [ "$dry_run" == 1 ]
 then
@@ -220,7 +276,7 @@ then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -u"
 fi
 
-# If updating, do not include name or stateless 
+# If updating, do not include name or stateless
 if [ -z "$current_actor" ]
 then
   ABACO_CREATE_OPTS="$ABACO_CREATE_OPTS -n ${REACTOR_NAME}"
