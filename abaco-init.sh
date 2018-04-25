@@ -20,8 +20,12 @@ function usage() { echo "$HELP"; exit 0; }
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/abaco-common.sh"
 
-function slugify {
-  echo "${1}" | tr -c -d [0-9A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+# function slugify {
+#   echo "${1}" | tr -c -d [0-9A-Za-z\ _-] | tr ' ' '_' | tr '[:upper:]' '[:lower:]'
+# }
+
+function slugify() {
+  echo $1
 }
 
 name=
@@ -100,7 +104,7 @@ if [ -d "$DIR/templates/$tenant/$lang" ]
 then
   if [ ! -f "$DIR/templates/$tenant/$lang/placeholder" ]
   then
-    cp -R ${DIR}/templates/${tenant}/${lang}/ ${name}/
+    cp -R ${DIR}/templates/${tenant}/${lang}/* ${name}
   else
     die "Template support for $lang is not yet implemented."
   fi

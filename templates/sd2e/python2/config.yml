@@ -2,3 +2,5 @@
 logs:
   level: DEBUG
   token: ~
+slack:
+  webhook: ~

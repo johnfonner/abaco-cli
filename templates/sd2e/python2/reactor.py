@@ -1,10 +1,10 @@
-from reactors import Reactor
+from reactors.utils import Reactor
 
 
 def main():
     """Main function"""
     r = Reactor()
-    r.logger("Hello this is actor {}".format(r.uid))
+    r.logger.debug("Hello this is actor {}".format(r.uid))
 
 
 if __name__ == '__main__':
