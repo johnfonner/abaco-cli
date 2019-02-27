@@ -1,3 +1,5 @@
+# NOTE: [https://github.com/TACC-Cloud/abaco-cli](https://github.com/TACC-Cloud/abaco-cli) is now the canonical repository for the Abaco CLI.  Please clone and follow that repository.
+
 # Abaco CLI
 
 Command line interface for working with the Abaco (Actor Based Containers) API
